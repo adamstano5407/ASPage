@@ -1,0 +1,17 @@
+namespace APIKros.Models
+{
+    public class Department
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = null!;
+        public string Code { get; set; } = null!;
+
+        public int ProjectId { get; set; }
+        public Project Project { get; set; } = null!;
+
+        public int LeaderId { get; set; }
+        public Employee Leader { get; set; } = null!;
+    }
+}
+

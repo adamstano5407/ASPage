@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using APIKros.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace APIKros.Data
 {
@@ -8,6 +9,6 @@ namespace APIKros.Data
         {
         }
 
-        public DbSet<WeatherForecast> WeatherForecasts { get; set; }
+        public DbSet<Employee> Employees { get;set;}
     }
 }

@@ -1,24 +1,46 @@
 services:
   api:
-    build: 
+    build:
       context: ../
-      dockerfile: APIKros/Dockerfile
+      dockerfile: APIKros/Dockerfile.dev
     container_name: api
+    working_dir: /src/APIKros
+    volumes:
+      - ../:/src
+    command: dotnet watch run --urls http://0.0.0.0:8080
     ports:
       - "8080:8080"
-    environment: 
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-          - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=${DB_NAME};User Id=${DB_USER};Password=${SA_PASSWORD};TrustServerCertificate=True;
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_HOST=sqlserver
+      - DB_PORT=1433
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_TRUST_CERTIFICATE=${DB_TRUST_CERTIFICATE}
     depends_on:
       - sqlserver
+    restart: unless-stopped
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2025-latest
     container_name: sqlserver
     ports:
-      - "1433:1433"
+      - "${DB_PORT}:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=${SA_PASSWORD}
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
       - MSSQL_PID=Developer
-     
+    restart: unless-stopped
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
