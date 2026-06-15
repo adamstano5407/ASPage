@@ -2,16 +2,18 @@
 using APIKros.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using APIKros.Models;
 
 namespace APIKros.Controllers
 {
     [ApiController]
-    [Route("api/employees")]
-    public class EmployeeController : ControllerBase
+    [Route("api/companies")]
+
+    public class CompanyController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public EmployeeController(AppDbContext context)
+        public CompanyController(AppDbContext context)
         {
             _context = context;
         }
@@ -19,29 +21,29 @@ namespace APIKros.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var employees = await _context.Employees.ToListAsync();
-            return Ok(employees);
+            var companies = await _context.Companies.ToListAsync();
+            return Ok(companies);
         }
-
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var employee = await _context.Employees.FindAsync(id);
-            if (employee == null)
+            var company = await _context.Companies.FindAsync(id);
+            if (company == null)
             {
                 return NotFound();
             }
-            return Ok(employee);
+            return Ok(company);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Employee employee)
+        public async Task<IActionResult> Create([FromBody] Company company)
         {
-            _context.Employees.Add(employee);
+            _context.Companies.Add(company);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new { id = employee.Id }, employee);
+            return CreatedAtAction(nameof(GetById), new { id = company.Id }, company);
         }
 
     }
+
 }
