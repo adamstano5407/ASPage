@@ -3,8 +3,10 @@ services:
     build:
       context: ../
       dockerfile: APIKros/Dockerfile.dev
+   
     container_name: api
     working_dir: /src/APIKros
+    user: "1000:1000"
     volumes:
       - ../:/src
     command: dotnet watch run --urls http://0.0.0.0:8080

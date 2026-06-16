@@ -1,14 +1,22 @@
-# Dockerfile.dev
 FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+ARG UID=1000
+ARG GID=1000
+
+RUN mkdir -p /src /home/appuser/.dotnet/tools /home/appuser/.nuget/packages && \
+    chown -R ${UID}:${GID} /src /home/appuser
+
+ENV DOTNET_CLI_HOME=/home/appuser
+ENV NUGET_PACKAGES=/home/appuser/.nuget/packages
+ENV PATH="$PATH:/home/appuser/.dotnet/tools"
+
+USER ${UID}:${GID}
 
 RUN dotnet tool install --global dotnet-ef
 RUN dotnet tool install --global TeaPie.Tool
-
-ENV PATH="$PATH:/root/.dotnet/tools"
 
 WORKDIR /src/APIKros
 
 EXPOSE 8080
 
 CMD ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:8080"]
-

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIKros.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260614140614_InitialCreate")]
+    [Migration("20260616140434_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -145,7 +145,6 @@ namespace APIKros.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
