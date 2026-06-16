@@ -1,8 +1,8 @@
 services:
   api:
     build:
-      context: ../
-      dockerfile: APIKros/Dockerfile.dev
+      context: ../../../
+      dockerfile: APIKros/Docker/dev/Dockerfile.dev
    
     container_name: api
     working_dir: /src/APIKros

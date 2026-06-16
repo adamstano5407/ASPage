@@ -1,0 +1,44 @@
+﻿services:
+  api:
+    build:
+      context: ../../../
+      dockerfile: APIKros/Docker/prod/Dockerfile
+    container_name: api
+    ports:
+      - "127.0.0.1:80:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - DB_HOST=sqlserver
+      - DB_PORT=1433
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_TRUST_CERTIFICATE=${DB_TRUST_CERTIFICATE}
+    depends_on:
+      - sqlserver
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    container_name: sqlserver
+    ports:
+      - "127.0.0.1:${DB_PORT}:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+      - MSSQL_PID=Developer
+    restart: unless-stopped
+    networks:
+      - app_network
+
+volumes:
+  sqlserver_data:
+
+networks:
+  app_network:
+    driver: bridge
