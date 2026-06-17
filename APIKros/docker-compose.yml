@@ -2,7 +2,7 @@ services:
   api:
     build:
       context: ../
-      dockerfile: APIKros/Dockerfile.dev
+      dockerfile: APIKros/Dockerfile
     
     container_name: api
     working_dir: /src/APIKros
@@ -11,7 +11,7 @@ services:
       - api_bin:/src/APIKros/bin
       - api_obj:/src/APIKros/obj
       - nuget_cache:/home/ubuntu/.nuget/packages
-    ports:
+    ports: 
       - "127.0.0.1:8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -21,6 +21,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_TRUST_CERTIFICATE=${DB_TRUST_CERTIFICATE}
+      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=1
     depends_on:
       - sqlserver
     networks:

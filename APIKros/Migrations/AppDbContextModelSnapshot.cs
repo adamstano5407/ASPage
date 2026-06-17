@@ -33,7 +33,7 @@ namespace APIKros.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("DirectorId")
+                    b.Property<int?>("DirectorId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -62,7 +62,7 @@ namespace APIKros.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("ManagerId")
+                    b.Property<int?>("ManagerId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -97,7 +97,7 @@ namespace APIKros.Migrations
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ManagerId")
+                    b.Property<int?>("ManagerId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -129,6 +129,10 @@ namespace APIKros.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("EmployeeNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -149,6 +153,9 @@ namespace APIKros.Migrations
                     b.HasIndex("CompanyId", "Email")
                         .IsUnique();
 
+                    b.HasIndex("CompanyId", "EmployeeNumber")
+                        .IsUnique();
+
                     b.ToTable("Employees");
                 });
 
@@ -167,7 +174,7 @@ namespace APIKros.Migrations
                     b.Property<int>("DivisionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ManagerId")
+                    b.Property<int?>("ManagerId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -189,8 +196,7 @@ namespace APIKros.Migrations
                     b.HasOne("APIKros.Models.Employee", "Director")
                         .WithMany()
                         .HasForeignKey("DirectorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Director");
                 });
@@ -200,8 +206,7 @@ namespace APIKros.Migrations
                     b.HasOne("APIKros.Models.Employee", "Manager")
                         .WithMany()
                         .HasForeignKey("ManagerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("APIKros.Models.Project", "Project")
                         .WithMany("Departments")
@@ -225,8 +230,7 @@ namespace APIKros.Migrations
                     b.HasOne("APIKros.Models.Employee", "Manager")
                         .WithMany()
                         .HasForeignKey("ManagerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Company");
 
@@ -255,8 +259,7 @@ namespace APIKros.Migrations
                     b.HasOne("APIKros.Models.Employee", "Manager")
                         .WithMany()
                         .HasForeignKey("ManagerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Division");
 
