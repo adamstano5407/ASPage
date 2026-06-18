@@ -3,12 +3,9 @@ using APIKros.DTOs.Employee;
 
 namespace APIKros.DTOs.Company
 {
-    public class DetailedCompanyDto : IDto<Models.Company, DetailedCompanyDto>
+    public class DetailedCompanyDto : HierarchyNodeDto, IDto<Models.Company, DetailedCompanyDto>
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Code { get; set; } = "";
-        public EmployeeDto? Director { get; set; }
+        public EmployeeDto? Manager { get; set; }
         public List<DivisionDto> Divisions { get; set; } = new();
         public List<EmployeeDto> Employees { get; set; } = new();
 
@@ -19,9 +16,9 @@ namespace APIKros.DTOs.Company
                 Id = company.Id,
                 Name = company.Name,
                 Code = company.Code,
-                Director = company.Director is null
+                Manager = company.Manager is null
                     ? null
-                    : EmployeeDto.CreateInstance(company.Director),
+                    : EmployeeDto.CreateInstance(company.Manager),
                 Divisions = company.Divisions
                     .Select(DivisionDto.CreateInstance)
                     .ToList(),

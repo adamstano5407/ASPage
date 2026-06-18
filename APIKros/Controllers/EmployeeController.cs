@@ -182,9 +182,9 @@ namespace APIKros.Controllers
             employee!.CompanyId = request.NewCompanyId;
 
             await _context.Companies
-                .Where(c => c.DirectorId == request.EmployeeId)
+                .Where(c => c.ManagerId == request.EmployeeId)
                 .ExecuteUpdateAsync(s => s
-                    .SetProperty(c => c.DirectorId, (int?)null));
+                    .SetProperty(c => c.ManagerId, (int?)null));
 
             await _context.Divisions
                 .Where(d => d.ManagerId == request.EmployeeId)

@@ -5,11 +5,8 @@ using APIKros.DTOs.Project;
 namespace APIKros.DTOs.Division
 {
 
-    public class StructuredDivisionDto : IDto<Models.Division, StructuredDivisionDto>
+    public class StructuredDivisionDto : HierarchyNodeDto,IDto<Models.Division, StructuredDivisionDto>
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Code { get; set; } = "";
         public CompanyDto? Company { get; set; }
         public EmployeeDto? Manager { get; set; }
 

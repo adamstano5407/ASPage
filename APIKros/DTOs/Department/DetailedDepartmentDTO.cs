@@ -3,11 +3,8 @@ using APIKros.DTOs.Project;
 
 namespace APIKros.DTOs.Department
 {
-    public class DetailedDepartmentDto : IDto<Models.Department, DetailedDepartmentDto>
+    public class DetailedDepartmentDto : HierarchyNodeDto, IDto<Models.Department, DetailedDepartmentDto>
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Code { get; set; } = "";
         public EmployeeDto? Manager { get; set; }
 
         public ProjectDto? Project { get; set; } = null!;

@@ -80,9 +80,9 @@ namespace APIKros.Data
 
            // Configure relationships for Manager and Director properties nullable, onDelete will be set null, can be assigned later. 
            modelBuilder.Entity<Company>()
-                .HasOne(c => c.Director)
+                .HasOne(c => c.Manager)
                 .WithMany()
-                .HasForeignKey(c => c.DirectorId)
+                .HasForeignKey(c => c.ManagerId)
                 .OnDelete(DeleteBehavior.SetNull);
 
 

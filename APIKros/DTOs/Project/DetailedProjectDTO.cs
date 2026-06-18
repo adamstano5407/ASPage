@@ -4,14 +4,10 @@ using APIKros.DTOs.Employee;
 
 namespace APIKros.DTOs.Project
 {
-    public class DetailedProjectDto : IDto<Models.Project, DetailedProjectDto>
+    public class DetailedProjectDto : HierarchyNodeDto ,IDto<Models.Project, DetailedProjectDto>
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Code { get; set; } = "";
         public EmployeeDto? Manager { get; set; }
         public DivisionDto? Division { get; set; }
-
         public List<DepartmentDto> Departments { get; set; } = new();
         public static DetailedProjectDto CreateInstance(Models.Project project)
         {

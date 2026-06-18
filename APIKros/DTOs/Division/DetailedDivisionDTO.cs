@@ -4,12 +4,9 @@ using APIKros.DTOs.Project;
 
 namespace APIKros.DTOs.Division
 {
-    public class DetailedDivisionDto : IDto<Models.Division, DetailedDivisionDto>
+    public class DetailedDivisionDto : HierarchyNodeDto, IDto<Models.Division, DetailedDivisionDto>
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Code { get; set; } = "";
-
+      
         public CompanyDto? Company { get; set; }
         public EmployeeDto? Manager { get; set; }
         public List<ProjectDto> Projects { get; set; } = new();
@@ -27,9 +24,7 @@ namespace APIKros.DTOs.Division
                 Projects = division.Projects
                     .Select(ProjectDto.CreateInstance)
                     .ToList(),
-                Company = division.Company is null
-                    ? null
-                    : CompanyDto.CreateInstance(division.Company)
+                Company = CompanyDto.CreateInstance(division.Company)
             };
         }
     }
