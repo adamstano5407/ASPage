@@ -3,6 +3,7 @@ using APIKros.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIKros.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260617173812_TestMigration")]
+    partial class TestMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,7 +36,7 @@ namespace APIKros.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("ManagerId")
+                    b.Property<int?>("DirectorId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -45,7 +48,7 @@ namespace APIKros.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.HasIndex("ManagerId");
+                    b.HasIndex("DirectorId");
 
                     b.ToTable("Companies");
                 });
@@ -193,12 +196,12 @@ namespace APIKros.Migrations
 
             modelBuilder.Entity("APIKros.Models.Company", b =>
                 {
-                    b.HasOne("APIKros.Models.Employee", "Manager")
+                    b.HasOne("APIKros.Models.Employee", "Director")
                         .WithMany()
-                        .HasForeignKey("ManagerId")
+                        .HasForeignKey("DirectorId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("Manager");
+                    b.Navigation("Director");
                 });
 
             modelBuilder.Entity("APIKros.Models.Department", b =>
