@@ -5,13 +5,23 @@ using Scalar.AspNetCore;
 using APIKros.Validators;
 using APIKros.Validators.Employee;
 using FluentValidation;
+using Microsoft.AspNetCore.RateLimiting;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+//Rate limiter 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("default", limiter =>
+    {
+        limiter.Window = TimeSpan.FromHours(1);
+        limiter.PermitLimit = 100;
+    });
+});
 
+// Add services to the container.
 builder.Services.AddControllers();
 
 //fluent validation
@@ -21,7 +31,6 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateEmployeeRequestValida
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
 
 var connectionString =
     $"Server={Environment.GetEnvironmentVariable("DB_HOST")},{Environment.GetEnvironmentVariable("DB_PORT")};" +
@@ -34,6 +43,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 var app = builder.Build();
+
+
+// CORS can be configured later when a frontend application is added.
 
 if (args.Contains("--seed"))
 {
@@ -56,9 +68,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRateLimiter();
+
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers()
+    .RequireRateLimiting("default");
 
 app.Run();
 
