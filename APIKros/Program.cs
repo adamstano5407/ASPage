@@ -41,11 +41,11 @@ if (args.Contains("--seed"))
 
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    await context.Database.MigrateAsync();
     await DatabaseSeeder.SeedAsync(context);
 
     return;
 }
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -61,3 +61,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+

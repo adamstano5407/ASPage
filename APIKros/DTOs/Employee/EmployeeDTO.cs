@@ -22,6 +22,7 @@ public class EmployeeDto : IDto<Models.Employee, EmployeeDto>
             LastName = employee.LastName,
             Email = employee.Email,
             Phone = employee.Phone,
+            EmployeeNumber =  employee.EmployeeNumber,
             CompanyId = employee.CompanyId
         };
     }

@@ -6,8 +6,7 @@ namespace APIKros.DTOs.Department
     public class DetailedDepartmentDto : HierarchyNodeDto, IDto<Models.Department, DetailedDepartmentDto>
     {
         public EmployeeDto? Manager { get; set; }
-
-        public ProjectDto? Project { get; set; } = null!;
+        
 
         public static DetailedDepartmentDto CreateInstance(Models.Department department)
         {
@@ -19,9 +18,6 @@ namespace APIKros.DTOs.Department
                 Manager = department.Manager is null
                     ? null
                     : EmployeeDto.CreateInstance(department.Manager),
-                Project = department.Project is null
-                    ? null
-                    : ProjectDto.CreateInstance(department.Project),
             };
         }
     }

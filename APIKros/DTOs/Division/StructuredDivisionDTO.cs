@@ -7,7 +7,6 @@ namespace APIKros.DTOs.Division
 
     public class StructuredDivisionDto : HierarchyNodeDto,IDto<Models.Division, StructuredDivisionDto>
     {
-        public CompanyDto? Company { get; set; }
         public EmployeeDto? Manager { get; set; }
 
         public List<DetailedProjectDto> Projects { get; set; } = new();
@@ -18,7 +17,6 @@ namespace APIKros.DTOs.Division
                 Id = division.Id,
                 Name = division.Name,
                 Code = division.Code,
-                Company = CompanyDto.CreateInstance(division.Company),
                 Manager = division.Manager is null
                     ? null
                     : EmployeeDto.CreateInstance(division.Manager),

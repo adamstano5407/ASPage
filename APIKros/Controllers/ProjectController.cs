@@ -124,6 +124,27 @@ public class ProjectController : ControllerBase
 
         return NoContent();
     }
+    
+    [HttpDelete("{projectId:int}/departments")]
+    [EndpointName("DeleteProjectDepartments")]
+    [EndpointSummary("Delete all project departments")]
+    [EndpointDescription("Deletes all departments assigned to the specified project.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteProjectDepartments(int projectId)
+    {
+        var projectExists = await _context.Projects
+            .AnyAsync(p => p.Id == projectId);
+
+        if (!projectExists)
+            return NotFound();
+
+        await _context.Departments
+            .Where(d => d.ProjectId == projectId)
+            .ExecuteDeleteAsync();
+
+        return NoContent();
+    }
 
     [HttpGet("{id:int}/details")]
     [EndpointName("GetProjectDetails")]

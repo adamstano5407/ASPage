@@ -135,8 +135,11 @@ namespace APIKros.Controllers
             if (request.Phone is not null)
                 employee.Phone = request.Phone;
 
-            if (request.CompanyId.HasValue)
+            if (request.CompanyId.HasValue && request.CompanyId.Value != employee.CompanyId)
+            {
+                await UnassignEmployeeFromLeadershipPositions(employee.Id);
                 employee.CompanyId = request.CompanyId.Value;
+            }
 
             await _context.SaveChangesAsync();
 
@@ -179,27 +182,10 @@ namespace APIKros.Controllers
         {
             var employee = await _context.Employees.FindAsync(request.EmployeeId);
 
+            
+            await UnassignEmployeeFromLeadershipPositions(request.EmployeeId);
             employee!.CompanyId = request.NewCompanyId;
-
-            await _context.Companies
-                .Where(c => c.ManagerId == request.EmployeeId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(c => c.ManagerId, (int?)null));
-
-            await _context.Divisions
-                .Where(d => d.ManagerId == request.EmployeeId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(d => d.ManagerId, (int?)null));
-
-            await _context.Projects
-                .Where(p => p.ManagerId == request.EmployeeId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(p => p.ManagerId, (int?)null));
-
-            await _context.Departments
-                .Where(d => d.ManagerId == request.EmployeeId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(d => d.ManagerId, (int?)null));
+            
 
             await _context.SaveChangesAsync();
 
@@ -207,5 +193,41 @@ namespace APIKros.Controllers
         }
 
 
+        [HttpGet("company/{companyId:int}")]
+        [EndpointName("GetEmployeesByCompanyId")]
+        [EndpointSummary("Get employees by Company ID")]
+        [EndpointDescription("Returns employees that belong to the specified company.")]
+        [ProducesResponseType(typeof(List<EmployeeDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetByCompanyId(int companyId)
+        {
+            var employees = await _context.Employees
+                .Where(e => e.CompanyId == companyId)
+                .ToListAsync();
+
+            return Ok(employees.Select(EmployeeDto.CreateInstance));
+        }
+        
+        
+        
+        private async Task UnassignEmployeeFromLeadershipPositions(int employeeId)
+        {
+            await _context.Companies
+                .Where(c => c.ManagerId == employeeId)
+                .ExecuteUpdateAsync(s => s.SetProperty(c => c.ManagerId, (int?)null));
+
+            await _context.Divisions
+                .Where(d => d.ManagerId == employeeId)
+                .ExecuteUpdateAsync(s => s.SetProperty(d => d.ManagerId, (int?)null));
+
+            await _context.Projects
+                .Where(p => p.ManagerId == employeeId)
+                .ExecuteUpdateAsync(s => s.SetProperty(p => p.ManagerId, (int?)null));
+
+            await _context.Departments
+                .Where(d => d.ManagerId == employeeId)
+                .ExecuteUpdateAsync(s => s.SetProperty(d => d.ManagerId, (int?)null));
+        }
     }
+    
+    
 }

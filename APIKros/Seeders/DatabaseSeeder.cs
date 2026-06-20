@@ -7,12 +7,14 @@ namespace APIKros.Seeders;
 
 public static class DatabaseSeeder
 {
+    private const string Locale = "sk";
     public static async Task SeedAsync(AppDbContext context)
     {
+        
         if (await context.Companies.AnyAsync())
             return;
 
-        var companies = new Faker<Company>()
+        var companies = new Faker<Company>(Locale)
             .RuleFor(c => c.Name, f => f.Company.CompanyName())
             .RuleFor(c => c.Code, f => f.Random.AlphaNumeric(6).ToUpper())
             .Generate(3);
@@ -22,9 +24,8 @@ public static class DatabaseSeeder
 
         foreach (var company in companies)
         {
-            var employees = new Faker<Employee>()
-                .RuleFor(e => e.EmployeeNumber,
-                    f => $"EMP-{f.UniqueIndex:D5}")
+            var employees = new Faker<Employee>(Locale)
+                .RuleFor(e => e.EmployeeNumber, f => $"EMP-{f.UniqueIndex:D5}")
                 .RuleFor(e => e.Title, f => f.Name.Prefix())
                 .RuleFor(e => e.FirstName, f => f.Name.FirstName())
                 .RuleFor(e => e.LastName, f => f.Name.LastName())
@@ -38,7 +39,7 @@ public static class DatabaseSeeder
 
             company.ManagerId = employees[0].Id;
 
-            var divisions = new Faker<Division>()
+            var divisions = new Faker<Division>(Locale)
                 .RuleFor(d => d.Name, f => f.Commerce.Department())
                 .RuleFor(d => d.Code, f => f.Random.AlphaNumeric(5).ToUpper())
                 .RuleFor(d => d.CompanyId, company.Id)
@@ -50,7 +51,7 @@ public static class DatabaseSeeder
 
             foreach (var division in divisions)
             {
-                var projects = new Faker<Project>()
+                var projects = new Faker<Project>(Locale)
                     .RuleFor(p => p.Name, f => f.Commerce.ProductName())
                     .RuleFor(p => p.Code, f => f.Random.AlphaNumeric(5).ToUpper())
                     .RuleFor(p => p.DivisionId, division.Id)
@@ -62,7 +63,7 @@ public static class DatabaseSeeder
 
                 foreach (var project in projects)
                 {
-                    var departments = new Faker<Department>()
+                    var departments = new Faker<Department>(Locale)
                         .RuleFor(d => d.Name, f => f.Commerce.Department())
                         .RuleFor(d => d.Code, f => f.Random.AlphaNumeric(5).ToUpper())
                         .RuleFor(d => d.ProjectId, project.Id)

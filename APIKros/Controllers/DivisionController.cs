@@ -126,6 +126,27 @@ public class DivisionController : ControllerBase
 
         return NoContent();
     }
+    
+    [HttpDelete("{divisionId:int}/projects")]
+    [EndpointName("DeleteDivisionProjects")]
+    [EndpointSummary("Delete all division projects")]
+    [EndpointDescription("Deletes all projects assigned to the specified division, including their departments.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteDivisionProjects(int divisionId)
+    {
+        var divisionExists = await _context.Divisions
+            .AnyAsync(d => d.Id == divisionId);
+
+        if (!divisionExists)
+            return NotFound();
+
+        await _context.Projects
+            .Where(p => p.DivisionId == divisionId)
+            .ExecuteDeleteAsync();
+
+        return NoContent();
+    }
 
     [HttpGet("{id:int}/details")]
     [EndpointName("GetDivisionDetails")]

@@ -127,6 +127,28 @@ public class CompanyController : ControllerBase
 
         return NoContent();
     }
+    
+    
+    [HttpDelete("{companyId:int}/divisions")]
+    [EndpointName("DeleteCompanyDivisions")]
+    [EndpointSummary("Delete all company divisions")]
+    [EndpointDescription("Deletes all divisions assigned to the specified company.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteCompanyDivisions(int companyId)
+    {
+        var companyExists = await _context.Companies
+            .AnyAsync(c => c.Id == companyId);
+
+        if (!companyExists)
+            return NotFound();
+
+        await _context.Divisions
+            .Where(d => d.CompanyId == companyId)
+            .ExecuteDeleteAsync();
+
+        return NoContent();
+    }
 
     [HttpGet("{id:int}/details")]
     [EndpointName("GetCompanyDetails")]

@@ -7,7 +7,6 @@ namespace APIKros.DTOs.Division
     public class DetailedDivisionDto : HierarchyNodeDto, IDto<Models.Division, DetailedDivisionDto>
     {
       
-        public CompanyDto? Company { get; set; }
         public EmployeeDto? Manager { get; set; }
         public List<ProjectDto> Projects { get; set; } = new();
 
@@ -24,7 +23,6 @@ namespace APIKros.DTOs.Division
                 Projects = division.Projects
                     .Select(ProjectDto.CreateInstance)
                     .ToList(),
-                Company = CompanyDto.CreateInstance(division.Company)
             };
         }
     }
