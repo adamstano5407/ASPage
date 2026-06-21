@@ -1,0 +1,44 @@
+--- TESTCASE 004-DeleteEmployee
+
+--- INIT
+#load "../../.teapie/Definitions/Employee/Employee.csx"
+#load "../../.teapie/Definitions/Generator.csx"
+
+var employee = GenerateEmployee();
+
+tp.SetVariable("NewEmployee", employee.ToJsonString(), "employees");
+
+--- HTTP
+### Create Employee
+# @name CreateEmployeeRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{NewEmployee}}
+
+### Delete Employee
+# @name DeleteEmployeeRequest
+DELETE {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.id}}
+
+### Get Deleted Employee
+# @name GetDeletedEmployeeRequest
+GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.id}}
+
+--- TEST
+
+tp.Test("Employee should be created.", () =>
+{
+    Equal(201, tp.Responses["CreateEmployeeRequest"].StatusCode());
+});
+
+tp.Test("Employee should be deleted.", () =>
+{
+    Equal(204, tp.Responses["DeleteEmployeeRequest"].StatusCode());
+});
+
+tp.Test("Deleted employee should not be found.", () =>
+{
+    Equal(404, tp.Responses["GetDeletedEmployeeRequest"].StatusCode());
+});
+
+--- END

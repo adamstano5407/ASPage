@@ -1,0 +1,169 @@
+--- TESTCASE 005-UpdateEmployeeCriticalValues
+
+--- INIT
+#load "../../.teapie/Definitions/Employee/Employee.csx"
+#load "../../.teapie/Definitions/Company/Company.csx"
+#load "../../.teapie/Definitions/Generator.csx"
+
+var employee = GenerateEmployee();
+var employeeTwo = GenerateEmployee();
+var company = GenerateCompany();
+var anotherCompany = GenerateCompany();
+
+tp.SetVariable("Employee", employee.ToJsonString(), "employees");
+tp.SetVariable("EmployeeTwo", employeeTwo.ToJsonString(), "employees");
+tp.SetVariable("Company", company.ToJsonString(), "companies");
+tp.SetVariable("AnotherCompany", anotherCompany.ToJsonString(), "companies");
+
+--- HTTP
+### Create Company 
+# @name CreateCompanyRequest
+POST {{APP_URL}}{{CompaniesEndpoint}}
+Content-Type: application/json
+
+{{Company}}
+
+### Create Another Company
+# @name CreateAnotherCompanyRequest
+POST {{APP_URL}}{{CompaniesEndpoint}}
+Content-Type: application/json
+
+{{AnotherCompany}}
+
+
+### Create Employee
+# @name CreateEmployeeRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{
+  "employeeNumber": "{{Employee.employeeNumber}}",
+  "title": "{{Employee.title}}",
+  "firstName": "{{Employee.firstName}}",
+  "lastName": "{{Employee.lastName}}",
+  "email": "{{Employee.email}}",
+  "phone": "{{Employee.phone}}",
+  "companyId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Create Employee Two
+# @name CreateEmployeeTwoRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{
+  "employeeNumber": "{{EmployeeTwo.employeeNumber}}",
+  "title": "{{EmployeeTwo.title}}",
+  "firstName": "{{EmployeeTwo.firstName}}",
+  "lastName": "{{EmployeeTwo.lastName}}",
+  "email": "{{EmployeeTwo.email}}",
+  "phone": "{{EmployeeTwo.phone}}",
+  "companyId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Update Employee With Duplicate Email
+# @name UpdateEmployeeDuplicateEmailRequest
+PUT {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeTwoRequest.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "email": "{{CreateEmployeeRequest.response.body.$.email}}"
+}
+
+### Update Employee With Duplicate Employee Number
+# @name UpdateEmployeeDuplicateEmployeeNumberRequest
+PUT {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeTwoRequest.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "employeeNumber": "{{CreateEmployeeRequest.response.body.$.employeeNumber}}"
+}
+
+### Change Employee Company
+# @name ChangeEmployeeCompanyRequest
+PUT {{APP_URL}}{{EmployeesEndpoint}}/change-company
+Content-Type: application/json
+
+{
+  "employeeId": {{CreateEmployeeRequest.response.body.$.id}},
+  "newCompanyId": {{CreateAnotherCompanyRequest.response.body.$.id}}
+}
+
+### Get Original Company Employees
+# @name GetOriginalCompanyEmployeesRequest
+GET {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}/employees
+
+### Get Another Company Employees
+# @name GetAnotherCompanyEmployeesRequest
+GET {{APP_URL}}{{CompaniesEndpoint}}/{{CreateAnotherCompanyRequest.response.body.$.id}}/employees
+
+### Get Updated Employee
+# @name GetUpdatedEmployeeRequest
+GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.id}}
+
+
+--- TEST
+
+tp.Test("Company should be created.", () =>
+{
+    Equal(201, tp.Responses["CreateCompanyRequest"].StatusCode());
+});
+
+tp.Test("Another company should be created.", () =>
+{
+    Equal(201, tp.Responses["CreateAnotherCompanyRequest"].StatusCode());
+});
+
+tp.Test("Employee should be created.", () =>
+{
+    Equal(201, tp.Responses["CreateEmployeeRequest"].StatusCode());
+});
+
+tp.Test("Employee two should be created.", () =>
+{
+    Equal(201, tp.Responses["CreateEmployeeTwoRequest"].StatusCode());
+});
+
+tp.Test("Update employee with duplicate email should return 400.", () =>
+{
+    Equal(400, tp.Responses["UpdateEmployeeDuplicateEmailRequest"].StatusCode());
+});
+
+tp.Test("Update employee with duplicate employee number should return 400.", () =>
+{
+    Equal(400, tp.Responses["UpdateEmployeeDuplicateEmployeeNumberRequest"].StatusCode());
+});
+
+tp.Test("Change employee company should return 204.", () =>
+{
+    Equal(204, tp.Responses["ChangeEmployeeCompanyRequest"].StatusCode());
+});
+
+await tp.Test("Employee should be moved to another company.", async () =>
+{
+    dynamic employee = await tp.Responses["GetUpdatedEmployeeRequest"].GetBodyAsExpandoAsync();
+    dynamic anotherCompany = await tp.Responses["CreateAnotherCompanyRequest"].GetBodyAsExpandoAsync();
+
+    Equal(anotherCompany.id, employee.companyId);
+});
+
+await tp.Test("Original company should contain only employee two.", async () =>
+{
+    dynamic employees = await tp.Responses["GetOriginalCompanyEmployeesRequest"].GetBodyAsExpandoAsync();
+    dynamic employeeTwo = await tp.Responses["CreateEmployeeTwoRequest"].GetBodyAsExpandoAsync();
+
+    Equal(1, employees.Count);
+    Equal(employeeTwo.id, employees[0].id);
+});
+
+await tp.Test("Another company should contain moved employee.", async () =>
+{
+    dynamic employees = await tp.Responses["GetAnotherCompanyEmployeesRequest"].GetBodyAsExpandoAsync();
+    dynamic movedEmployee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+
+    Equal(1, employees.Count);
+    Equal(movedEmployee.id, employees[0].id);
+});
+
+
+---END

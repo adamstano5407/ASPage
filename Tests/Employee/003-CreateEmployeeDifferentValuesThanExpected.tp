@@ -33,6 +33,28 @@ tp.SetVariable("InvalidEmail", invalidEmail.ToJsonString(), "employees");
 tp.SetVariable("InvalidPhone", invalidPhone.ToJsonString(), "employees");
 tp.SetVariable("InvalidCompanyId", invalidCompanyId.ToJsonString(), "employees");
 
+var nullEmployeeNumber = GenerateEmployee();
+nullEmployeeNumber.EmployeeNumber = null;
+
+var nullFirstName = GenerateEmployee();
+nullFirstName.FirstName = null;
+
+var nullLastName = GenerateEmployee();
+nullLastName.LastName = null;
+
+var nullEmail = GenerateEmployee();
+nullEmail.Email = null;
+
+var nullPhone = GenerateEmployee();
+nullPhone.Phone = null;
+
+tp.SetVariable("NullEmployeeNumber", nullEmployeeNumber.ToJsonString(), "employees");
+tp.SetVariable("NullFirstName", nullFirstName.ToJsonString(), "employees");
+tp.SetVariable("NullLastName", nullLastName.ToJsonString(), "employees");
+tp.SetVariable("NullEmail", nullEmail.ToJsonString(), "employees");
+tp.SetVariable("NullPhone", nullPhone.ToJsonString(), "employees");
+
+
 --- HTTP
 ### Missing Employee Number
 # @name MissingEmployeeNumberRequest
@@ -83,6 +105,42 @@ Content-Type: application/json
 
 {{InvalidCompanyId}}
 
+
+### Null Employee Number
+# @name NullEmployeeNumberRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{NullEmployeeNumber}}
+
+### Null First Name
+# @name NullFirstNameRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{NullFirstName}}
+
+### Null Last Name
+# @name NullLastNameRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{NullLastName}}
+
+### Null Email
+# @name NullEmailRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{NullEmail}}
+
+### Null Phone
+# @name NullPhoneRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{NullPhone}}
+
 --- TEST
 
 string[] requestNames =
@@ -93,7 +151,12 @@ string[] requestNames =
   "InvalidLastNameRequest",
   "InvalidEmailRequest",
   "InvalidPhoneRequest",
-  "InvalidCompanyIdRequest"
+  "InvalidCompanyIdRequest",
+  "NullEmployeeNumberRequest",
+  "NullFirstNameRequest",
+  "NullLastNameRequest",
+  "NullEmailRequest",
+  "NullPhoneRequest"
 };
 
 foreach (var requestName in requestNames)
