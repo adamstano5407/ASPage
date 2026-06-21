@@ -1,0 +1,110 @@
+--- TESTCASE 003-CreateEmployeeDifferentValuesThanExpected
+
+--- INIT
+#load "../../.teapie/Definitions/Employee/Employee.csx"
+#load "../../.teapie/Definitions/Generator.csx"
+
+var missingEmployeeNumber = GenerateEmployee();
+missingEmployeeNumber.EmployeeNumber = "";
+
+var invalidTitle = GenerateEmployee();
+invalidTitle.Title = "InvalidTitle";
+
+var invalidFirstName = GenerateEmployee();
+invalidFirstName.FirstName = "John123";
+
+var invalidLastName = GenerateEmployee();
+invalidLastName.LastName = "Doe123";
+
+var invalidEmail = GenerateEmployee();
+invalidEmail.Email = "not-email";
+
+var invalidPhone = GenerateEmployee();
+invalidPhone.Phone = "abc-phone";
+
+var invalidCompanyId = GenerateEmployee();
+invalidCompanyId.CompanyId = -1;
+
+tp.SetVariable("MissingEmployeeNumber", missingEmployeeNumber.ToJsonString(), "employees");
+tp.SetVariable("InvalidTitle", invalidTitle.ToJsonString(), "employees");
+tp.SetVariable("InvalidFirstName", invalidFirstName.ToJsonString(), "employees");
+tp.SetVariable("InvalidLastName", invalidLastName.ToJsonString(), "employees");
+tp.SetVariable("InvalidEmail", invalidEmail.ToJsonString(), "employees");
+tp.SetVariable("InvalidPhone", invalidPhone.ToJsonString(), "employees");
+tp.SetVariable("InvalidCompanyId", invalidCompanyId.ToJsonString(), "employees");
+
+--- HTTP
+### Missing Employee Number
+# @name MissingEmployeeNumberRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{MissingEmployeeNumber}}
+
+### Invalid Title
+# @name InvalidTitleRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{InvalidTitle}}
+
+### Invalid First Name
+# @name InvalidFirstNameRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{InvalidFirstName}}
+
+### Invalid Last Name
+# @name InvalidLastNameRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{InvalidLastName}}
+
+### Invalid Email
+# @name InvalidEmailRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{InvalidEmail}}
+
+### Invalid Phone
+# @name InvalidPhoneRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{InvalidPhone}}
+
+### Invalid Company Id
+# @name InvalidCompanyIdRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{InvalidCompanyId}}
+
+--- TEST
+
+string[] requestNames =
+{
+  "MissingEmployeeNumberRequest",
+  "InvalidTitleRequest",
+  "InvalidFirstNameRequest",
+  "InvalidLastNameRequest",
+  "InvalidEmailRequest",
+  "InvalidPhoneRequest",
+  "InvalidCompanyIdRequest"
+};
+
+foreach (var requestName in requestNames)
+{
+await tp.Test($"{requestName} should return 400.", async () =>
+{
+var body = await tp.Responses[requestName].GetBodyAsync();
+Console.WriteLine(body);
+
+Equal(400, tp.Responses[requestName].StatusCode());
+});
+}
+
+--- END

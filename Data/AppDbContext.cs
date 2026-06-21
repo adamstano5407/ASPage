@@ -8,45 +8,68 @@ namespace APIKros.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
-        public DbSet<Company> Companies { get; set; }
-        public DbSet<Division> Divisions { get; set; }
-        public DbSet<Project> Projects { get; set; }
-        public DbSet<Department> Departments { get; set; }
-        public DbSet<Employee> Employees { get; set; }
+        public DbSet<Company> Companies => Set<Company>();
+        public DbSet<Division> Divisions => Set<Division>();
+        public DbSet<Project> Projects => Set<Project>();
+        public DbSet<Department> Departments => Set<Department>();
+        public DbSet<Employee> Employees => Set<Employee>();
 
 
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-{
+        {
             base.OnModelCreating(modelBuilder);
 
-            // Configure unique constraints and indexes 
-            modelBuilder.Entity<Company>()
-                .HasIndex(c => c.Code)
-                .IsUnique();
+            // Configure constraints, indexes and relationships
+            modelBuilder.Entity<Company>(entity =>
+            {
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
 
-            modelBuilder.Entity<Division>()
-                .HasIndex(d => new { d.CompanyId, d.Code })
-                .IsUnique();
+                entity.HasIndex(e => e.Code).IsUnique();
+            });
 
-            modelBuilder.Entity<Project>()
-                .HasIndex(p => new { p.DivisionId, p.Code })
-                .IsUnique();
+            modelBuilder.Entity<Division>(entity =>
+            {
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
 
-            modelBuilder.Entity<Department>()
-                .HasIndex(d => new { d.ProjectId, d.Code })
-                .IsUnique();
+                entity.HasIndex(e => new { e.CompanyId, e.Code }).IsUnique();
+            });
 
-            modelBuilder.Entity<Employee>()
-                .HasIndex(e => new { e.CompanyId, e.Email })
-                .IsUnique();
+            modelBuilder.Entity<Project>(entity =>
+            {
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
 
-            modelBuilder.Entity<Employee>()
-                .HasIndex(e => new { e.CompanyId, e.EmployeeNumber })
-                .IsUnique();
+                entity.HasIndex(e => new { e.DivisionId, e.Code }).IsUnique();
+            });
+
+            modelBuilder.Entity<Department>(entity =>
+            {   
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+                entity.HasIndex(e => new { e.ProjectId, e.Code }).IsUnique();
+            });
+
+            modelBuilder.Entity<Employee>(entity =>
+            {
+                entity.Property(e => e.EmployeeNumber).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Phone).IsRequired().HasMaxLength(30);
+                entity.Property(e => e.Title).HasMaxLength(80);
+                entity.Property(e => e.CompanyId).IsRequired();
+
+                entity.HasIndex(e => new { e.CompanyId, e.Email }).IsUnique();
+                entity.HasIndex(e => new { e.CompanyId, e.EmployeeNumber }).IsUnique();
+            });
             
             
+    
+        
 
             // Configure relationships and foreign keys of hierarchical structure
 
@@ -54,7 +77,7 @@ namespace APIKros.Data
                 .HasOne(e => e.Company)
                 .WithMany(c => c.Employees)
                 .HasForeignKey(e => e.CompanyId)
-                .OnDelete(DeleteBehavior.Restrict)
+                .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
 
             modelBuilder.Entity<Division>()
@@ -104,6 +127,9 @@ namespace APIKros.Data
                 .WithMany()
                 .HasForeignKey(d => d.ManagerId)
                 .OnDelete(DeleteBehavior.SetNull);
-}
+            
+            
+            
+        }
     }
 }

@@ -7,7 +7,6 @@ namespace APIKros.Requests.Employee
         [Required] 
         public string EmployeeNumber { get; set; } = null!;
         
-        [Required]
         public string? Title { get; set; } = null;
         [Required]
         public string FirstName { get; set; } = null!;

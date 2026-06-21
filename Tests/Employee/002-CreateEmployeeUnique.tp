@@ -1,0 +1,69 @@
+--- TESTCASE 002-CreateEmployeeUnique
+
+--- INIT
+#load "../../.teapie/Definitions/Employee/Employee.csx"
+#load "../../.teapie/Definitions/Generator.csx"
+
+var employee = GenerateEmployee();
+
+var duplicateEmailEmployee = GenerateEmployee();
+duplicateEmailEmployee.Email = employee.Email;
+duplicateEmailEmployee.CompanyId = employee.CompanyId;
+
+var duplicateEmployeeNumberEmployee = GenerateEmployee();
+duplicateEmployeeNumberEmployee.EmployeeNumber = employee.EmployeeNumber;
+duplicateEmployeeNumberEmployee.CompanyId = employee.CompanyId;
+
+tp.SetVariable("Employee", employee.ToJsonString(), "employees");
+tp.SetVariable("DuplicateEmailEmployee", duplicateEmailEmployee.ToJsonString(), "employees");
+tp.SetVariable("DuplicateEmployeeNumberEmployee", duplicateEmployeeNumberEmployee.ToJsonString(), "employees");
+
+--- HTTP
+### Create Employee First Time
+# @name CreateEmployeeRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{Employee}}
+
+### Create Employee With Duplicate Email
+# @name CreateEmployeeDuplicateEmailRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{DuplicateEmailEmployee}}
+
+### Create Employee With Duplicate Employee Number
+# @name CreateEmployeeDuplicateEmployeeNumberRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{{DuplicateEmployeeNumberEmployee}}
+
+--- TEST
+
+await tp.Test("First employee creation should return 201.", async () =>
+{
+var body = await tp.Responses["CreateEmployeeRequest"].GetBodyAsync();
+Console.WriteLine(body);
+
+Equal(201, tp.Responses["CreateEmployeeRequest"].StatusCode());
+});
+
+await tp.Test("Creating employee with duplicate email in same company should fail.", async () =>
+{
+var body = await tp.Responses["CreateEmployeeDuplicateEmailRequest"].GetBodyAsync();
+Console.WriteLine(body);
+
+Equal(400, tp.Responses["CreateEmployeeDuplicateEmailRequest"].StatusCode());
+});
+
+await tp.Test("Creating employee with duplicate employee number in same company should fail.", async () =>
+{
+var body = await tp.Responses["CreateEmployeeDuplicateEmployeeNumberRequest"].GetBodyAsync();
+Console.WriteLine(body);
+
+Equal(400, tp.Responses["CreateEmployeeDuplicateEmployeeNumberRequest"].StatusCode());
+});
+
+--- END
