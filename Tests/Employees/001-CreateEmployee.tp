@@ -1,0 +1,44 @@
+--- TESTCASE 001-CreateEmployee
+
+--- INIT
+#load "../../Definitions/Generators.csx"
+
+var baseUrl = tp.EnvironmentVariables.Get<string>("BaseUrl");
+var employeesEndpoint = tp.EnvironmentVariables.Get<string>("EmployeesEndpoint");
+
+var employee = GenerateEmployee();
+
+tp.SetVariable("employee", employee, "temp");
+
+--- HTTP
+
+POST {{baseUrl}}{{employeesEndpoint}}
+Content-Type: application/json
+
+{
+  "employeeNumber": "{{employee.EmployeeNumber}}",
+  "title": "{{employee.Title}}",
+  "firstName": "{{employee.FirstName}}",
+  "lastName": "{{employee.LastName}}",
+  "email": "{{employee.Email}}",
+  "phone": "{{employee.Phone}}",
+  "companyId": {{employee.CompanyId}}
+}
+
+--- TEST
+
+response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+var expectedEmployee = Variables["employee"] as Employee;
+var createdEmployee = response.GetJson<Employee>();
+
+createdEmployee.Id.Should().BeGreaterThan(0);
+createdEmployee.EmployeeNumber.Should().Be(expectedEmployee.EmployeeNumber);
+createdEmployee.Title.Should().Be(expectedEmployee.Title);
+createdEmployee.FirstName.Should().Be(expectedEmployee.FirstName);
+createdEmployee.LastName.Should().Be(expectedEmployee.LastName);
+createdEmployee.Email.Should().Be(expectedEmployee.Email);
+createdEmployee.Phone.Should().Be(expectedEmployee.Phone);
+createdEmployee.CompanyId.Should().Be(expectedEmployee.CompanyId);
+
+--- END

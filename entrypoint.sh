@@ -6,6 +6,8 @@ echo "Fixing permissions..."
 mkdir -p \
     /src/bin \
     /src/obj \
+    /src/Tests \
+    /src/Migrations \
     /home/ubuntu/.nuget/packages \
     /home/ubuntu/.nuget/NuGet \
     /home/ubuntu/.dotnet/tools
@@ -13,6 +15,8 @@ mkdir -p \
 chown -R 1000:1000 \
     /src/bin \
     /src/obj \
+    /src/Tests \
+    /src/Migrations \
     /home/ubuntu/.nuget \
     /home/ubuntu/.dotnet || true
 

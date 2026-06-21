@@ -26,10 +26,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\.dockerignore">
+    <None Include="..\. ">
       <DependentUpon>Dockerfile</DependentUpon>
       <Link>Docker\prod\.dockerignore</Link>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include=".teapie\Definitions\Company\Company.csx" />
+    <Content Include=".teapie\Definitions\Company\CompanyFaker.csx" />
+    <Content Include=".teapie\Definitions\Department\Department.csx" />
+    <Content Include=".teapie\Definitions\Department\DepartmentFaker.csx" />
+    <Content Include=".teapie\Definitions\Division\Division.csx" />
+    <Content Include=".teapie\Definitions\Division\DivisionFaker.csx" />
+    <Content Include=".teapie\Definitions\Employee\Employee.csx" />
+    <Content Include=".teapie\Definitions\Employee\EmployeeFaker.csx" />
+    <Content Include=".teapie\Definitions\Generator.csx" />
+    <Content Include=".teapie\Definitions\Project\Project.csx" />
+    <Content Include=".teapie\Definitions\Project\ProjectFaker.csx" />
+    <Content Include=".teapie\env.json" />
   </ItemGroup>
 
 </Project>
