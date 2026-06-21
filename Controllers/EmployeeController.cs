@@ -70,7 +70,8 @@ namespace APIKros.Controllers
                 LastName = request.LastName,
                 Email = request.Email,
                 Phone = request.Phone,
-                CompanyId = request.CompanyId
+                CompanyId = request.CompanyId, 
+                EmployeeNumber = request.EmployeeNumber
             };
                 
             _context.Employees.Add(employee);

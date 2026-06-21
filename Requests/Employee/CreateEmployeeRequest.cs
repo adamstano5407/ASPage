@@ -5,7 +5,7 @@ namespace APIKros.Requests.Employee
     public class CreateEmployeeRequest
     {
         [Required] 
-        public string? EmployeeNumber { get; set; } = null!;
+        public string EmployeeNumber { get; set; } = null!;
         
         [Required]
         public string? Title { get; set; } = null;

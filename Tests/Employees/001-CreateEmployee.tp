@@ -1,44 +1,66 @@
 --- TESTCASE 001-CreateEmployee
 
 --- INIT
-#load "../../Definitions/Generators.csx"
+#load "../../.teapie/Definitions/Employee/Employee.csx"
+#load "../../.teapie/Definitions/Generator.csx"
 
-var baseUrl = tp.EnvironmentVariables.Get<string>("BaseUrl");
-var employeesEndpoint = tp.EnvironmentVariables.Get<string>("EmployeesEndpoint");
 
 var employee = GenerateEmployee();
 
-tp.SetVariable("employee", employee, "temp");
+tp.SetVariable("NewEmployee", employee.ToJsonString(), "employees");
 
 --- HTTP
-
-POST {{baseUrl}}{{employeesEndpoint}}
+### Create Employee
+# @name CreateEmployeeRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
 Content-Type: application/json
 
-{
-  "employeeNumber": "{{employee.EmployeeNumber}}",
-  "title": "{{employee.Title}}",
-  "firstName": "{{employee.FirstName}}",
-  "lastName": "{{employee.LastName}}",
-  "email": "{{employee.Email}}",
-  "phone": "{{employee.Phone}}",
-  "companyId": {{employee.CompanyId}}
-}
+{{NewEmployee}}
+
+### Get Created Employee
+# @name GetCreatedEmployeeRequest
+GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.id}}
 
 --- TEST
 
-response.StatusCode.Should().Be(HttpStatusCode.Created);
+var newEmployee = tp.GetVariable<string>("NewEmployee");
+dynamic expected = newEmployee.ToExpando();
 
-var expectedEmployee = Variables["employee"] as Employee;
-var createdEmployee = response.GetJson<Employee>();
+await tp.Test("Create employee should return 201.", async () =>
+{
+    var body = await tp.Responses["CreateEmployeeRequest"].GetBodyAsync();
+    Console.WriteLine(body);
 
-createdEmployee.Id.Should().BeGreaterThan(0);
-createdEmployee.EmployeeNumber.Should().Be(expectedEmployee.EmployeeNumber);
-createdEmployee.Title.Should().Be(expectedEmployee.Title);
-createdEmployee.FirstName.Should().Be(expectedEmployee.FirstName);
-createdEmployee.LastName.Should().Be(expectedEmployee.LastName);
-createdEmployee.Email.Should().Be(expectedEmployee.Email);
-createdEmployee.Phone.Should().Be(expectedEmployee.Phone);
-createdEmployee.CompanyId.Should().Be(expectedEmployee.CompanyId);
+    Equal(201, tp.Responses["CreateEmployeeRequest"].StatusCode());
+});
+
+await tp.Test("Created employee should match request body.", async () =>
+{
+    dynamic created = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+
+    True(created.id > 0);
+    Equal(expected.employeeNumber, created.employeeNumber);
+    Equal(expected.title, created.title);
+    Equal(expected.firstName, created.firstName);
+    Equal(expected.lastName, created.lastName);
+    Equal(expected.email, created.email);
+    Equal(expected.phone, created.phone);
+    Equal(expected.companyId, created.companyId);
+});
+
+tp.Test("Get created employee should return 200.", () =>
+{
+    Equal(200, tp.Responses["GetCreatedEmployeeRequest"].StatusCode());
+});
+
+await tp.Test("Retrieved employee should match created employee.", async () =>
+{
+    dynamic created = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+    dynamic retrieved = await tp.Responses["GetCreatedEmployeeRequest"].GetBodyAsExpandoAsync();
+
+    Equal(created.id, retrieved.id);
+    Equal(created.employeeNumber, retrieved.employeeNumber);
+    Equal(created.email, retrieved.email);
+});
 
 --- END

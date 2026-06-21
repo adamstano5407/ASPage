@@ -26,7 +26,8 @@ public class CreateEmployeeRequestValidator : AbstractValidator<CreateEmployeeRe
         RuleFor(x => x.Title)
             .MaximumLength(80)
             .Must(ValidationUtils.IsAllowedTitle)
-            .WithMessage("Title contains invalid value.");
+            .WithMessage("Title contains invalid value.")
+            .When(x => x.Title is not null);
 
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("First name is required.")

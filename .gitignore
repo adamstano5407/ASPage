@@ -16,3 +16,5 @@ obj/
 appsettings.Development.json
 
 *.log
+
+.teapie/cache/

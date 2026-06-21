@@ -11,7 +11,8 @@ namespace APIKros.Models
         [Key]
         public int Id { get; set; }
 
-        [Required] public string EmployeeNumber = null!;
+        [Required] 
+        public string EmployeeNumber = null!;
         
         public string? Title { get; set; } = null;
         [Required]
