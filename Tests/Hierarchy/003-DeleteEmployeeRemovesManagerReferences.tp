@@ -1,0 +1,394 @@
+--- TESTCASE 003-DeleteEmployeeRemovesManagerReferences
+
+--- INIT
+#load "../../.teapie/Definitions/Company/Company.csx"
+#load "../../.teapie/Definitions/Division/Division.csx"
+#load "../../.teapie/Definitions/Project/Project.csx"
+#load "../../.teapie/Definitions/Department/Department.csx"
+#load "../../.teapie/Definitions/Employee/Employee.csx"
+#load "../../.teapie/Definitions/Generator.csx"
+
+var company = GenerateCompany();
+
+var employeeToDelete = GenerateEmployee();
+var employeeToKeep = GenerateEmployee();
+
+var divisionA = GenerateDivision();
+var divisionB = GenerateDivision();
+var divisionC = GenerateDivision();
+
+var projectA1 = GenerateProject();
+var projectA2 = GenerateProject();
+var projectB1 = GenerateProject();
+var projectC1 = GenerateProject();
+
+var departmentA1 = GenerateDepartment();
+var departmentA2 = GenerateDepartment();
+var departmentB1 = GenerateDepartment();
+var departmentC1 = GenerateDepartment();
+
+tp.SetVariable("Company", company.ToJsonString(), "hierarchy");
+
+tp.SetVariable("EmployeeToDeleteNumber", employeeToDelete.EmployeeNumber, "hierarchy");
+tp.SetVariable("EmployeeToDeleteTitle", employeeToDelete.Title ?? "Mgr.", "hierarchy");
+tp.SetVariable("EmployeeToDeleteFirstName", employeeToDelete.FirstName, "hierarchy");
+tp.SetVariable("EmployeeToDeleteLastName", employeeToDelete.LastName, "hierarchy");
+tp.SetVariable("EmployeeToDeleteEmail", employeeToDelete.Email, "hierarchy");
+tp.SetVariable("EmployeeToDeletePhone", employeeToDelete.Phone, "hierarchy");
+
+tp.SetVariable("EmployeeToKeepNumber", employeeToKeep.EmployeeNumber, "hierarchy");
+tp.SetVariable("EmployeeToKeepTitle", employeeToKeep.Title ?? "Mgr.", "hierarchy");
+tp.SetVariable("EmployeeToKeepFirstName", employeeToKeep.FirstName, "hierarchy");
+tp.SetVariable("EmployeeToKeepLastName", employeeToKeep.LastName, "hierarchy");
+tp.SetVariable("EmployeeToKeepEmail", employeeToKeep.Email, "hierarchy");
+tp.SetVariable("EmployeeToKeepPhone", employeeToKeep.Phone, "hierarchy");
+
+tp.SetVariable("DivisionAName", divisionA.Name, "hierarchy");
+tp.SetVariable("DivisionACode", divisionA.Code, "hierarchy");
+tp.SetVariable("DivisionBName", divisionB.Name, "hierarchy");
+tp.SetVariable("DivisionBCode", divisionB.Code, "hierarchy");
+tp.SetVariable("DivisionCName", divisionC.Name, "hierarchy");
+tp.SetVariable("DivisionCCode", divisionC.Code, "hierarchy");
+
+tp.SetVariable("ProjectA1Name", projectA1.Name, "hierarchy");
+tp.SetVariable("ProjectA1Code", projectA1.Code, "hierarchy");
+tp.SetVariable("ProjectA2Name", projectA2.Name, "hierarchy");
+tp.SetVariable("ProjectA2Code", projectA2.Code, "hierarchy");
+tp.SetVariable("ProjectB1Name", projectB1.Name, "hierarchy");
+tp.SetVariable("ProjectB1Code", projectB1.Code, "hierarchy");
+tp.SetVariable("ProjectC1Name", projectC1.Name, "hierarchy");
+tp.SetVariable("ProjectC1Code", projectC1.Code, "hierarchy");
+
+tp.SetVariable("DepartmentA1Name", departmentA1.Name, "hierarchy");
+tp.SetVariable("DepartmentA1Code", departmentA1.Code, "hierarchy");
+tp.SetVariable("DepartmentA2Name", departmentA2.Name, "hierarchy");
+tp.SetVariable("DepartmentA2Code", departmentA2.Code, "hierarchy");
+tp.SetVariable("DepartmentB1Name", departmentB1.Name, "hierarchy");
+tp.SetVariable("DepartmentB1Code", departmentB1.Code, "hierarchy");
+tp.SetVariable("DepartmentC1Name", departmentC1.Name, "hierarchy");
+tp.SetVariable("DepartmentC1Code", departmentC1.Code, "hierarchy");
+
+--- HTTP
+
+### Create Company
+# @name CreateCompanyRequest
+POST {{APP_URL}}{{CompaniesEndpoint}}
+Content-Type: application/json
+
+{{Company}}
+
+### Create Employee To Delete
+# @name CreateEmployeeToDeleteRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{
+  "title": "{{EmployeeToDeleteTitle}}",
+  "employeeNumber": "{{EmployeeToDeleteNumber}}",
+  "firstName": "{{EmployeeToDeleteFirstName}}",
+  "lastName": "{{EmployeeToDeleteLastName}}",
+  "email": "{{EmployeeToDeleteEmail}}",
+  "phone": "{{EmployeeToDeletePhone}}",
+  "companyId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Create Employee To Keep
+# @name CreateEmployeeToKeepRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{
+  "title": "{{EmployeeToKeepTitle}}",
+  "employeeNumber": "{{EmployeeToKeepNumber}}",
+  "firstName": "{{EmployeeToKeepFirstName}}",
+  "lastName": "{{EmployeeToKeepLastName}}",
+  "email": "{{EmployeeToKeepEmail}}",
+  "phone": "{{EmployeeToKeepPhone}}",
+  "companyId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Assign Company Director To Delete
+# @name AssignCompanyDirectorRequest
+PUT {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}/director
+Content-Type: application/json
+
+{
+  "employeeId": {{CreateEmployeeToDeleteRequest.response.body.$.id}}
+}
+
+### Create Division A - Manager To Delete
+# @name CreateDivisionARequest
+POST {{APP_URL}}{{DivisionsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DivisionAName}}",
+  "code": "{{DivisionACode}}",
+  "managerId": {{CreateEmployeeToDeleteRequest.response.body.$.id}},
+  "parentId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Create Division B - Manager To Delete
+# @name CreateDivisionBRequest
+POST {{APP_URL}}{{DivisionsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DivisionBName}}",
+  "code": "{{DivisionBCode}}",
+  "managerId": {{CreateEmployeeToDeleteRequest.response.body.$.id}},
+  "parentId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Create Division C - Manager To Keep
+# @name CreateDivisionCRequest
+POST {{APP_URL}}{{DivisionsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DivisionCName}}",
+  "code": "{{DivisionCCode}}",
+  "managerId": {{CreateEmployeeToKeepRequest.response.body.$.id}},
+  "parentId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Create Project A1 - Manager To Delete
+# @name CreateProjectA1Request
+POST {{APP_URL}}{{ProjectsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{ProjectA1Name}}",
+  "code": "{{ProjectA1Code}}",
+  "managerId": {{CreateEmployeeToDeleteRequest.response.body.$.id}},
+  "parentId": {{CreateDivisionARequest.response.body.$.id}}
+}
+
+### Create Project A2 - Manager To Keep
+# @name CreateProjectA2Request
+POST {{APP_URL}}{{ProjectsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{ProjectA2Name}}",
+  "code": "{{ProjectA2Code}}",
+  "managerId": {{CreateEmployeeToKeepRequest.response.body.$.id}},
+  "parentId": {{CreateDivisionARequest.response.body.$.id}}
+}
+
+### Create Project B1 - Manager To Delete
+# @name CreateProjectB1Request
+POST {{APP_URL}}{{ProjectsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{ProjectB1Name}}",
+  "code": "{{ProjectB1Code}}",
+  "managerId": {{CreateEmployeeToDeleteRequest.response.body.$.id}},
+  "parentId": {{CreateDivisionBRequest.response.body.$.id}}
+}
+
+### Create Project C1 - Manager To Keep
+# @name CreateProjectC1Request
+POST {{APP_URL}}{{ProjectsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{ProjectC1Name}}",
+  "code": "{{ProjectC1Code}}",
+  "managerId": {{CreateEmployeeToKeepRequest.response.body.$.id}},
+  "parentId": {{CreateDivisionCRequest.response.body.$.id}}
+}
+
+### Create Department A1 - Manager To Delete
+# @name CreateDepartmentA1Request
+POST {{APP_URL}}{{DepartmentsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DepartmentA1Name}}",
+  "code": "{{DepartmentA1Code}}",
+  "managerId": {{CreateEmployeeToDeleteRequest.response.body.$.id}},
+  "parentId": {{CreateProjectA1Request.response.body.$.id}}
+}
+
+### Create Department A2 - Manager To Keep
+# @name CreateDepartmentA2Request
+POST {{APP_URL}}{{DepartmentsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DepartmentA2Name}}",
+  "code": "{{DepartmentA2Code}}",
+  "managerId": {{CreateEmployeeToKeepRequest.response.body.$.id}},
+  "parentId": {{CreateProjectA2Request.response.body.$.id}}
+}
+
+### Create Department B1 - Manager To Delete
+# @name CreateDepartmentB1Request
+POST {{APP_URL}}{{DepartmentsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DepartmentB1Name}}",
+  "code": "{{DepartmentB1Code}}",
+  "managerId": {{CreateEmployeeToDeleteRequest.response.body.$.id}},
+  "parentId": {{CreateProjectB1Request.response.body.$.id}}
+}
+
+### Create Department C1 - Manager To Keep
+# @name CreateDepartmentC1Request
+POST {{APP_URL}}{{DepartmentsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DepartmentC1Name}}",
+  "code": "{{DepartmentC1Code}}",
+  "managerId": {{CreateEmployeeToKeepRequest.response.body.$.id}},
+  "parentId": {{CreateProjectC1Request.response.body.$.id}}
+}
+
+### Delete Employee
+# @name DeleteEmployeeToDeleteRequest
+DELETE {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeToDeleteRequest.response.body.$.id}}
+
+### Get Company After Delete
+# @name GetCompanyAfterDeleteRequest
+GET {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}
+
+### Get Division A After Delete
+# @name GetDivisionAAfterDeleteRequest
+GET {{APP_URL}}{{DivisionsEndpoint}}/{{CreateDivisionARequest.response.body.$.id}}
+
+### Get Division B After Delete
+# @name GetDivisionBAfterDeleteRequest
+GET {{APP_URL}}{{DivisionsEndpoint}}/{{CreateDivisionBRequest.response.body.$.id}}
+
+### Get Division C After Delete
+# @name GetDivisionCAfterDeleteRequest
+GET {{APP_URL}}{{DivisionsEndpoint}}/{{CreateDivisionCRequest.response.body.$.id}}
+
+### Get Project A1 After Delete
+# @name GetProjectA1AfterDeleteRequest
+GET {{APP_URL}}{{ProjectsEndpoint}}/{{CreateProjectA1Request.response.body.$.id}}
+
+### Get Project A2 After Delete
+# @name GetProjectA2AfterDeleteRequest
+GET {{APP_URL}}{{ProjectsEndpoint}}/{{CreateProjectA2Request.response.body.$.id}}
+
+### Get Project B1 After Delete
+# @name GetProjectB1AfterDeleteRequest
+GET {{APP_URL}}{{ProjectsEndpoint}}/{{CreateProjectB1Request.response.body.$.id}}
+
+### Get Project C1 After Delete
+# @name GetProjectC1AfterDeleteRequest
+GET {{APP_URL}}{{ProjectsEndpoint}}/{{CreateProjectC1Request.response.body.$.id}}
+
+### Get Department A1 After Delete
+# @name GetDepartmentA1AfterDeleteRequest
+GET {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartmentA1Request.response.body.$.id}}
+
+### Get Department A2 After Delete
+# @name GetDepartmentA2AfterDeleteRequest
+GET {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartmentA2Request.response.body.$.id}}
+
+### Get Department B1 After Delete
+# @name GetDepartmentB1AfterDeleteRequest
+GET {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartmentB1Request.response.body.$.id}}
+
+### Get Department C1 After Delete
+# @name GetDepartmentC1AfterDeleteRequest
+GET {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartmentC1Request.response.body.$.id}}
+
+### Get Deleted Employee
+# @name GetDeletedEmployeeRequest
+GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeToDeleteRequest.response.body.$.id}}
+
+### Get Employee To Keep
+# @name GetEmployeeToKeepRequest
+GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeToKeepRequest.response.body.$.id}}
+
+--- TEST
+
+tp.Test("Company and employees should be created.", () =>
+{
+    Equal(201, tp.Responses["CreateCompanyRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateEmployeeToDeleteRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateEmployeeToKeepRequest"].StatusCode());
+});
+
+tp.Test("Company director should be assigned.", () =>
+{
+    Equal(200, tp.Responses["AssignCompanyDirectorRequest"].StatusCode());
+});
+
+tp.Test("Hierarchy should be created.", () =>
+{
+    Equal(201, tp.Responses["CreateDivisionARequest"].StatusCode());
+    Equal(201, tp.Responses["CreateDivisionBRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateDivisionCRequest"].StatusCode());
+
+    Equal(201, tp.Responses["CreateProjectA1Request"].StatusCode());
+    Equal(201, tp.Responses["CreateProjectA2Request"].StatusCode());
+    Equal(201, tp.Responses["CreateProjectB1Request"].StatusCode());
+    Equal(201, tp.Responses["CreateProjectC1Request"].StatusCode());
+
+    Equal(201, tp.Responses["CreateDepartmentA1Request"].StatusCode());
+    Equal(201, tp.Responses["CreateDepartmentA2Request"].StatusCode());
+    Equal(201, tp.Responses["CreateDepartmentB1Request"].StatusCode());
+    Equal(201, tp.Responses["CreateDepartmentC1Request"].StatusCode());
+});
+
+tp.Test("Employee should be deleted.", () =>
+{
+    Equal(204, tp.Responses["DeleteEmployeeToDeleteRequest"].StatusCode());
+});
+
+tp.Test("Deleted employee should not be found.", () =>
+{
+    Equal(404, tp.Responses["GetDeletedEmployeeRequest"].StatusCode());
+});
+
+tp.Test("Employee to keep should still exist.", () =>
+{
+    Equal(200, tp.Responses["GetEmployeeToKeepRequest"].StatusCode());
+});
+
+await tp.Test("Deleted employee should be removed from manager references only.", async () =>
+{
+    dynamic employeeToKeep = await tp.Responses["CreateEmployeeToKeepRequest"].GetBodyAsExpandoAsync();
+
+    dynamic company = await tp.Responses["GetCompanyAfterDeleteRequest"].GetBodyAsExpandoAsync();
+
+    dynamic divisionA = await tp.Responses["GetDivisionAAfterDeleteRequest"].GetBodyAsExpandoAsync();
+    dynamic divisionB = await tp.Responses["GetDivisionBAfterDeleteRequest"].GetBodyAsExpandoAsync();
+    dynamic divisionC = await tp.Responses["GetDivisionCAfterDeleteRequest"].GetBodyAsExpandoAsync();
+
+    dynamic projectA1 = await tp.Responses["GetProjectA1AfterDeleteRequest"].GetBodyAsExpandoAsync();
+    dynamic projectA2 = await tp.Responses["GetProjectA2AfterDeleteRequest"].GetBodyAsExpandoAsync();
+    dynamic projectB1 = await tp.Responses["GetProjectB1AfterDeleteRequest"].GetBodyAsExpandoAsync();
+    dynamic projectC1 = await tp.Responses["GetProjectC1AfterDeleteRequest"].GetBodyAsExpandoAsync();
+
+    dynamic departmentA1 = await tp.Responses["GetDepartmentA1AfterDeleteRequest"].GetBodyAsExpandoAsync();
+    dynamic departmentA2 = await tp.Responses["GetDepartmentA2AfterDeleteRequest"].GetBodyAsExpandoAsync();
+    dynamic departmentB1 = await tp.Responses["GetDepartmentB1AfterDeleteRequest"].GetBodyAsExpandoAsync();
+    dynamic departmentC1 = await tp.Responses["GetDepartmentC1AfterDeleteRequest"].GetBodyAsExpandoAsync();
+
+    True(company.managerId is null);
+
+    True(divisionA.managerId is null);
+    True(divisionB.managerId is null);
+    Equal(employeeToKeep.id, divisionC.managerId);
+
+    True(projectA1.managerId is null);
+    Equal(employeeToKeep.id, projectA2.managerId);
+    True(projectB1.managerId is null);
+    Equal(employeeToKeep.id, projectC1.managerId);
+
+    True(departmentA1.managerId is null);
+    Equal(employeeToKeep.id, departmentA2.managerId);
+    True(departmentB1.managerId is null);
+    Equal(employeeToKeep.id, departmentC1.managerId);
+});
+
+--- END

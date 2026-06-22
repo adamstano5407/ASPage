@@ -1,4 +1,4 @@
---- TESTCASE 001-CreateHierarchyTesting
+--- TESTCASE 001-CreateHierarchy
 
 --- INIT
 #load "../../.teapie/Definitions/Company/Company.csx"
