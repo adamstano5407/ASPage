@@ -12,27 +12,51 @@ ASP.NET Core Web API for managing companies, employees and a four-level organiza
 - Scalar / OpenAPI
 - TeaPie tests
 
-## Project structure
 
-The hierarchy consists of:
 
-Company → Division → Project → Department
+## Prerequisites
 
-Each hierarchy node has:
+Before running the project, make sure you have installed:
 
-- name
-- code
-- optional manager
+- Docker Desktop
+- WSL 2
+- Git
+- .NET SDK 10
 
-Employees belong to a company and can be assigned as managers.
+For Windows development, WSL 2 is recommended.
 
-## Run with Docker
+Check installed versions:
+
+```bash
+docker --version
+dotnet --version
+```
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/adamstano5407/APIKros
+```
+
+Navigate to the project directory:
+
+```bash
+cd APIKros
+```
+
+Create an environment file:
+
+```bash
+cp .env-example .env
+```
+
+Build and start the containers:
 
 ```bash
 docker compose up --build
 ```
-
----
 
 ## Database
 
@@ -87,8 +111,19 @@ docker exec -it api teapie test Tests/Employee/001-CreateEmployee.tp
 
 
 
-## Project Structure
+## Project structure
 
+The hierarchy consists of:
+
+Company → Division → Project → Department
+
+Each hierarchy node has:
+
+- name
+- code
+- optional manager
+
+Employees belong to a company and can be assigned as managers.
 ```
 APIKros
 │
