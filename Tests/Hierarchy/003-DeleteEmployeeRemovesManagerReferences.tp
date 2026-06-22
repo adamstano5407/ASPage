@@ -308,6 +308,11 @@ GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeToDeleteRequest.response.bo
 # @name GetEmployeeToKeepRequest
 GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeToKeepRequest.response.body.$.id}}
 
+
+### Delete Company
+# @name DeleteCompanyRequest
+DELETE {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}
+
 --- TEST
 
 tp.Test("Company and employees should be created.", () =>

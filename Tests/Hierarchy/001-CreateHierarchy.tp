@@ -15,104 +15,154 @@ var department = GenerateDepartment();
 var employee = GenerateEmployee();
 
 tp.SetVariable("Company", company.ToJsonString(), "hierarchy");
-tp.SetVariable("Division", division.ToJsonString(), "hierarchy");
-tp.SetVariable("Project", project.ToJsonString(), "hierarchy");
-tp.SetVariable("Department", department.ToJsonString(), "hierarchy");
-tp.SetVariable("Employee", employee.ToJsonString(), "hierarchy");
+
+tp.SetVariable("DivisionName", division.Name, "hierarchy");
+tp.SetVariable("DivisionCode", division.Code, "hierarchy");
+
+tp.SetVariable("ProjectName", project.Name, "hierarchy");
+tp.SetVariable("ProjectCode", project.Code, "hierarchy");
+
+tp.SetVariable("DepartmentName", department.Name, "hierarchy");
+tp.SetVariable("DepartmentCode", department.Code, "hierarchy");
+
+tp.SetVariable("EmployeeNumber", employee.EmployeeNumber, "hierarchy");
+tp.SetVariable("EmployeeTitle", employee.Title ?? "Mgr.", "hierarchy");
+tp.SetVariable("EmployeeFirstName", employee.FirstName, "hierarchy");
+tp.SetVariable("EmployeeLastName", employee.LastName, "hierarchy");
+tp.SetVariable("EmployeeEmail", employee.Email, "hierarchy");
+tp.SetVariable("EmployeePhone", employee.Phone, "hierarchy");
 
 --- HTTP
 
+### Create Company
+# @name CreateCompanyRequest
 POST {{APP_URL}}/api/companies
 Content-Type: application/json
 
 {{Company}}
 
-###
-
+### Create Employee
+# @name CreateEmployeeRequest
 POST {{APP_URL}}/api/employees
 Content-Type: application/json
 
 {
-  "employeeNumber": "{{Employee.employeeNumber}}",
-  "title": "{{Employee.title}}",
-  "firstName": "{{Employee.firstName}}",
-  "lastName": "{{Employee.lastName}}",
-  "email": "{{Employee.email}}",
-  "phone": "{{Employee.phone}}",
-  "companyId": "{{response[0].body.id}}"
+  "employeeNumber": "{{EmployeeNumber}}",
+  "title": "{{EmployeeTitle}}",
+  "firstName": "{{EmployeeFirstName}}",
+  "lastName": "{{EmployeeLastName}}",
+  "email": "{{EmployeeEmail}}",
+  "phone": "{{EmployeePhone}}",
+  "companyId": {{CreateCompanyRequest.response.body.$.id}}
 }
-
-###
-
+### Create Division
+# @name CreateDivisionRequest
 POST {{APP_URL}}/api/divisions
 Content-Type: application/json
 
 {
-  "name": "{{Division.name}}",
-  "code": "{{Division.code}}",
-  "managerId": "{{response[1].body.id}}",
-  "parentId": "{{response[0].body.id}}"
+  "name": "{{DivisionName}}",
+  "code": "{{DivisionCode}}",
+  "managerId": {{CreateEmployeeRequest.response.body.$.id}},
+  "parentId": {{CreateCompanyRequest.response.body.$.id}}
 }
 
-###
-
+### Create Project
+# @name CreateProjectRequest
 POST {{APP_URL}}/api/projects
 Content-Type: application/json
 
 {
-  "name": "{{Project.name}}",
-  "code": "{{Project.code}}",
-  "managerId": "{{response[1].body.id}}",
-  "parentId": "{{response[2].body.id}}"
+  "name": "{{ProjectName}}",
+  "code": "{{ProjectCode}}",
+  "managerId": {{CreateEmployeeRequest.response.body.$.id}},
+  "parentId": {{CreateDivisionRequest.response.body.$.id}}
 }
-
-###
-
+### Create Department
+# @name CreateDepartmentRequest
 POST {{APP_URL}}/api/departments
 Content-Type: application/json
 
 {
-  "name": "{{Department.name}}",
-  "code": "{{Department.code}}",
-  "managerId": "{{response[1].body.id}}",
-  "parentId": "{{response[3].body.id}}"
+  "name": "{{DepartmentName}}",
+  "code": "{{DepartmentCode}}",
+  "managerId": {{CreateEmployeeRequest.response.body.$.id}},
+  "parentId": {{CreateProjectRequest.response.body.$.id}}
 }
+
+### Delete Company
+# @name DeleteCompanyRequest
+DELETE {{APP_URL}}/api/companies/{{CreateCompanyRequest.response.body.$.id}}
+
+### Get Deleted Company
+# @name GetDeletedCompanyRequest
+GET {{APP_URL}}/api/companies/{{CreateCompanyRequest.response.body.$.id}}
+
+### Get Deleted Employee
+# @name GetDeletedEmployeeRequest
+GET {{APP_URL}}/api/employees/{{CreateEmployeeRequest.response.body.$.id}}
+
+### Get Deleted Division
+# @name GetDeletedDivisionRequest
+GET {{APP_URL}}/api/divisions/{{CreateDivisionRequest.response.body.$.id}}
+
+### Get Deleted Project
+# @name GetDeletedProjectRequest
+GET {{APP_URL}}/api/projects/{{CreateProjectRequest.response.body.$.id}}
+
+### Get Deleted Department
+# @name GetDeletedDepartmentRequest
+GET {{APP_URL}}/api/departments/{{CreateDepartmentRequest.response.body.$.id}}
 
 --- TEST
 
-response[0].StatusCode.Should().Be(HttpStatusCode.Created);
-response[1].StatusCode.Should().Be(HttpStatusCode.Created);
-response[2].StatusCode.Should().Be(HttpStatusCode.Created);
-response[3].StatusCode.Should().Be(HttpStatusCode.Created);
-response[4].StatusCode.Should().Be(HttpStatusCode.Created);
+tp.Test("Hierarchy should be created.", () =>
+{
+    Equal(201, tp.Responses["CreateCompanyRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateEmployeeRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateDivisionRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateProjectRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateDepartmentRequest"].StatusCode());
+});
 
-var createdCompany = response[0].GetJson<CompanyDto>();
-var createdEmployee = response[1].GetJson<EmployeeDto>();
-var createdDivision = response[2].GetJson<DivisionDto>();
-var createdProject = response[3].GetJson<ProjectDto>();
-var createdDepartment = response[4].GetJson<DepartmentDto>();
+await tp.Test("Created hierarchy should have correct relations.", async () =>
+{
+    dynamic createdCompany = await tp.Responses["CreateCompanyRequest"].GetBodyAsExpandoAsync();
+    dynamic createdEmployee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+    dynamic createdDivision = await tp.Responses["CreateDivisionRequest"].GetBodyAsExpandoAsync();
+    dynamic createdProject = await tp.Responses["CreateProjectRequest"].GetBodyAsExpandoAsync();
+    dynamic createdDepartment = await tp.Responses["CreateDepartmentRequest"].GetBodyAsExpandoAsync();
 
-createdCompany.Id.Should().BeGreaterThan(0);
-createdEmployee.Id.Should().BeGreaterThan(0);
-createdDivision.Id.Should().BeGreaterThan(0);
-createdProject.Id.Should().BeGreaterThan(0);
-createdDepartment.Id.Should().BeGreaterThan(0);
+    True(createdCompany.id > 0);
+    True(createdEmployee.id > 0);
+    True(createdDivision.id > 0);
+    True(createdProject.id > 0);
+    True(createdDepartment.id > 0);
 
-createdEmployee.CompanyId.Should().Be(createdCompany.Id);
+    Equal(createdCompany.id, createdEmployee.companyId);
 
-createdDivision.CompanyId.Should().Be(createdCompany.Id);
-createdDivision.ManagerId.Should().Be(createdEmployee.Id);
+    Equal(createdCompany.id, createdDivision.companyId);
+    Equal(createdEmployee.id, createdDivision.managerId);
 
-createdProject.DivisionId.Should().Be(createdDivision.Id);
-createdProject.ManagerId.Should().Be(createdEmployee.Id);
+    Equal(createdDivision.id, createdProject.divisionId);
+    Equal(createdEmployee.id, createdProject.managerId);
 
-createdDepartment.ProjectId.Should().Be(createdProject.Id);
-createdDepartment.ManagerId.Should().Be(createdEmployee.Id);
+    Equal(createdProject.id, createdDepartment.projectId);
+    Equal(createdEmployee.id, createdDepartment.managerId);
+});
 
-tp.SetVariable("CreatedCompanyId", createdCompany.Id.ToString(), "hierarchy");
-tp.SetVariable("CreatedEmployeeId", createdEmployee.Id.ToString(), "hierarchy");
-tp.SetVariable("CreatedDivisionId", createdDivision.Id.ToString(), "hierarchy");
-tp.SetVariable("CreatedProjectId", createdProject.Id.ToString(), "hierarchy");
-tp.SetVariable("CreatedDepartmentId", createdDepartment.Id.ToString(), "hierarchy");
+tp.Test("Company should be deleted.", () =>
+{
+    Equal(204, tp.Responses["DeleteCompanyRequest"].StatusCode());
+});
 
----END
+tp.Test("Deleted hierarchy should not be found.", () =>
+{
+    Equal(404, tp.Responses["GetDeletedCompanyRequest"].StatusCode());
+    Equal(404, tp.Responses["GetDeletedEmployeeRequest"].StatusCode());
+    Equal(404, tp.Responses["GetDeletedDivisionRequest"].StatusCode());
+    Equal(404, tp.Responses["GetDeletedProjectRequest"].StatusCode());
+    Equal(404, tp.Responses["GetDeletedDepartmentRequest"].StatusCode());
+});
+
+--- END

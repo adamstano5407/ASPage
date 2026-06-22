@@ -1,0 +1,74 @@
+--- TESTCASE 004-CreateHierarchyInvalidParent
+
+--- INIT
+#load "../../.teapie/Definitions/Division/Division.csx"
+#load "../../.teapie/Definitions/Project/Project.csx"
+#load "../../.teapie/Definitions/Department/Department.csx"
+#load "../../.teapie/Definitions/Generator.csx"
+
+var division = GenerateDivision();
+var project = GenerateProject();
+var department = GenerateDepartment();
+
+tp.SetVariable("DivisionName", division.Name, "hierarchy");
+tp.SetVariable("DivisionCode", division.Code, "hierarchy");
+
+tp.SetVariable("ProjectName", project.Name, "hierarchy");
+tp.SetVariable("ProjectCode", project.Code, "hierarchy");
+
+tp.SetVariable("DepartmentName", department.Name, "hierarchy");
+tp.SetVariable("DepartmentCode", department.Code, "hierarchy");
+
+--- HTTP
+
+### Create Division With Invalid Company
+# @name CreateDivisionInvalidParentRequest
+POST {{APP_URL}}{{DivisionsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DivisionName}}",
+  "code": "{{DivisionCode}}",
+  "parentId": 99999999
+}
+
+### Create Project With Invalid Division
+# @name CreateProjectInvalidParentRequest
+POST {{APP_URL}}{{ProjectsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{ProjectName}}",
+  "code": "{{ProjectCode}}",
+  "parentId": 99999999
+}
+
+### Create Department With Invalid Project
+# @name CreateDepartmentInvalidParentRequest
+POST {{APP_URL}}{{DepartmentsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DepartmentName}}",
+  "code": "{{DepartmentCode}}",
+  "parentId": 99999999
+}
+
+--- TEST
+
+tp.Test("Division with invalid company should return 400.", () =>
+{
+Equal(400, tp.Responses["CreateDivisionInvalidParentRequest"].StatusCode());
+});
+
+tp.Test("Project with invalid division should return 400.", () =>
+{
+Equal(400, tp.Responses["CreateProjectInvalidParentRequest"].StatusCode());
+});
+
+tp.Test("Department with invalid project should return 400.", () =>
+{
+Equal(400, tp.Responses["CreateDepartmentInvalidParentRequest"].StatusCode());
+});
+
+--- END

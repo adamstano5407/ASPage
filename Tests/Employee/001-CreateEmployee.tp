@@ -1,66 +1,189 @@
 --- TESTCASE 001-CreateEmployee
 
 --- INIT
+#load "../../.teapie/Definitions/Company/Company.csx"
+#load "../../.teapie/Definitions/Division/Division.csx"
+#load "../../.teapie/Definitions/Project/Project.csx"
+#load "../../.teapie/Definitions/Department/Department.csx"
 #load "../../.teapie/Definitions/Employee/Employee.csx"
 #load "../../.teapie/Definitions/Generator.csx"
+#load "../../.teapie/Definitions/SetObjectVariable.csx"
 
 
+var company = GenerateCompany();
+var division = GenerateDivision();
+var project = GenerateProject();
+var department = GenerateDepartment();
 var employee = GenerateEmployee();
 
-tp.SetVariable("NewEmployee", employee.ToJsonString(), "employees");
+tp.SetVariable("Company", company.ToJsonString(), "hierarchy");
+SetObjectVariables<Employee>("Employee", employee);
+SetObjectVariables("Division", division);
+SetObjectVariables("Project", project);
+SetObjectVariables("Department", department);
+
 
 --- HTTP
-### Create Employee
-# @name CreateEmployeeRequest
-POST {{APP_URL}}{{EmployeesEndpoint}}
+
+### Create Company
+# @name CreateCompanyRequest
+POST {{APP_URL}}/api/companies
 Content-Type: application/json
 
-{{NewEmployee}}
+{{Company}}
 
-### Get Created Employee
-# @name GetCreatedEmployeeRequest
-GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.id}}
+### Create Employee
+# @name CreateEmployeeRequest
+POST {{APP_URL}}/api/employees
+Content-Type: application/json
+
+{
+  "employeeNumber": "{{EmployeeEmployeeNumber}}",
+  "title": "{{EmployeeTitle}}",
+  "firstName": "{{EmployeeFirstName}}",
+  "lastName": "{{EmployeeLastName}}",
+  "email": "{{EmployeeEmail}}",
+  "phone": "{{EmployeePhone}}",
+  "companyId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Create Division
+# @name CreateDivisionRequest
+POST {{APP_URL}}/api/divisions
+Content-Type: application/json
+
+{
+  "name": "{{DivisionName}}",
+  "code": "{{DivisionCode}}",
+  "managerId": {{CreateEmployeeRequest.response.body.$.id}},
+  "parentId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Create Project
+# @name CreateProjectRequest
+POST {{APP_URL}}/api/projects
+Content-Type: application/json
+
+{
+  "name": "{{ProjectName}}",
+  "code": "{{ProjectCode}}",
+  "managerId": {{CreateEmployeeRequest.response.body.$.id}},
+  "parentId": {{CreateDivisionRequest.response.body.$.id}}
+}
+
+### Create Department
+# @name CreateDepartmentRequest
+POST {{APP_URL}}/api/departments
+Content-Type: application/json
+
+{
+  "name": "{{DepartmentName}}",
+  "code": "{{DepartmentCode}}",
+  "managerId": {{CreateEmployeeRequest.response.body.$.id}},
+  "parentId": {{CreateProjectRequest.response.body.$.id}}
+}
+
+### Delete Company
+# @name DeleteCompanyRequest
+DELETE {{APP_URL}}/api/companies/{{CreateCompanyRequest.response.body.$.id}}
+
+### Get Deleted Company
+# @name GetDeletedCompanyRequest
+GET {{APP_URL}}/api/companies/{{CreateCompanyRequest.response.body.$.id}}
+
+### Get Deleted Employee
+# @name GetDeletedEmployeeRequest
+GET {{APP_URL}}/api/employees/{{CreateEmployeeRequest.response.body.$.id}}
+
+### Get Deleted Division
+# @name GetDeletedDivisionRequest
+GET {{APP_URL}}/api/divisions/{{CreateDivisionRequest.response.body.$.id}}
+
+### Get Deleted Project
+# @name GetDeletedProjectRequest
+GET {{APP_URL}}/api/projects/{{CreateProjectRequest.response.body.$.id}}
+
+### Get Deleted Department
+# @name GetDeletedDepartmentRequest
+GET {{APP_URL}}/api/departments/{{CreateDepartmentRequest.response.body.$.id}}
 
 --- TEST
 
-var newEmployee = tp.GetVariable<string>("NewEmployee");
-dynamic expected = newEmployee.ToExpando();
 
-await tp.Test("Create employee should return 201.", async () =>
+tp.Test("Hierarchy should be created.", () =>
 {
-    var body = await tp.Responses["CreateEmployeeRequest"].GetBodyAsync();
-    Console.WriteLine(body);
-
+    Equal(201, tp.Responses["CreateCompanyRequest"].StatusCode());
     Equal(201, tp.Responses["CreateEmployeeRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateDivisionRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateProjectRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateDepartmentRequest"].StatusCode());
 });
 
-await tp.Test("Created employee should match request body.", async () =>
+await tp.Test("Created entities should have ids.", async () =>
 {
-    dynamic created = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+    dynamic company = await tp.Responses["CreateCompanyRequest"].GetBodyAsExpandoAsync();
+    dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+    dynamic division = await tp.Responses["CreateDivisionRequest"].GetBodyAsExpandoAsync();
+    dynamic project = await tp.Responses["CreateProjectRequest"].GetBodyAsExpandoAsync();
+    dynamic department = await tp.Responses["CreateDepartmentRequest"].GetBodyAsExpandoAsync();
 
-    True(created.id > 0);
-    Equal(expected.employeeNumber.ToString(), created.employeeNumber.ToString());
-    Equal(expected.title, created.title);
-    Equal(expected.firstName, created.firstName);
-    Equal(expected.lastName, created.lastName);
-    Equal(expected.email, created.email);
-    Equal(expected.phone, created.phone);
-    Equal(expected.companyId, created.companyId);
+    True(company.id > 0);
+    True(employee.id > 0);
+    True(division.id > 0);
+    True(project.id > 0);
+    True(department.id > 0);
 });
 
-tp.Test("Get created employee should return 200.", () =>
+await tp.Test("Employee should belong to created company.", async () =>
 {
-    Equal(200, tp.Responses["GetCreatedEmployeeRequest"].StatusCode());
+    dynamic company = await tp.Responses["CreateCompanyRequest"].GetBodyAsExpandoAsync();
+    dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+
+    Equal(company.id, employee.companyId);
 });
 
-await tp.Test("Retrieved employee should match created employee.", async () =>
+await tp.Test("Division should belong to company and use employee as manager.", async () =>
 {
-    dynamic created = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
-    dynamic retrieved = await tp.Responses["GetCreatedEmployeeRequest"].GetBodyAsExpandoAsync();
+    dynamic company = await tp.Responses["CreateCompanyRequest"].GetBodyAsExpandoAsync();
+    dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+    dynamic division = await tp.Responses["CreateDivisionRequest"].GetBodyAsExpandoAsync();
 
-    Equal(created.id, retrieved.id);
-    Equal(created.employeeNumber.ToString(), created.employeeNumber.ToString());
-    Equal(created.email, retrieved.email);
+    Equal(company.id, division.companyId);
+    Equal(employee.id, division.managerId);
+});
+
+await tp.Test("Project should belong to division and use employee as manager.", async () =>
+{
+    dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+    dynamic division = await tp.Responses["CreateDivisionRequest"].GetBodyAsExpandoAsync();
+    dynamic project = await tp.Responses["CreateProjectRequest"].GetBodyAsExpandoAsync();
+
+    Equal(division.id, project.divisionId);
+    Equal(employee.id, project.managerId);
+});
+
+await tp.Test("Department should belong to project and use employee as manager.", async () =>
+{
+    dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+    dynamic project = await tp.Responses["CreateProjectRequest"].GetBodyAsExpandoAsync();
+    dynamic department = await tp.Responses["CreateDepartmentRequest"].GetBodyAsExpandoAsync();
+
+    Equal(project.id, department.projectId);
+    Equal(employee.id, department.managerId);
+});
+
+tp.Test("Company should be deleted.", () =>
+{
+    Equal(204, tp.Responses["DeleteCompanyRequest"].StatusCode());
+});
+
+tp.Test("Deleted hierarchy should not be found.", () =>
+{
+    Equal(404, tp.Responses["GetDeletedCompanyRequest"].StatusCode());
+    Equal(404, tp.Responses["GetDeletedEmployeeRequest"].StatusCode());
+    Equal(404, tp.Responses["GetDeletedDivisionRequest"].StatusCode());
+    Equal(404, tp.Responses["GetDeletedProjectRequest"].StatusCode());
+    Equal(404, tp.Responses["GetDeletedDepartmentRequest"].StatusCode());
 });
 
 --- END

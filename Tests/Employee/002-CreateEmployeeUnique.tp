@@ -1,69 +1,174 @@
 --- TESTCASE 002-CreateEmployeeUnique
 
 --- INIT
+#load "../../.teapie/Definitions/Company/Company.csx"
 #load "../../.teapie/Definitions/Employee/Employee.csx"
 #load "../../.teapie/Definitions/Generator.csx"
+
+var companyA = GenerateCompany();
+var companyB = GenerateCompany();
 
 var employee = GenerateEmployee();
 
 var duplicateEmailEmployee = GenerateEmployee();
 duplicateEmailEmployee.Email = employee.Email;
-duplicateEmailEmployee.CompanyId = employee.CompanyId;
 
 var duplicateEmployeeNumberEmployee = GenerateEmployee();
 duplicateEmployeeNumberEmployee.EmployeeNumber = employee.EmployeeNumber;
-duplicateEmployeeNumberEmployee.CompanyId = employee.CompanyId;
 
-tp.SetVariable("Employee", employee.ToJsonString(), "employees");
-tp.SetVariable("DuplicateEmailEmployee", duplicateEmailEmployee.ToJsonString(), "employees");
-tp.SetVariable("DuplicateEmployeeNumberEmployee", duplicateEmployeeNumberEmployee.ToJsonString(), "employees");
+var sameValuesDifferentCompanyEmployee = GenerateEmployee();
+sameValuesDifferentCompanyEmployee.Email = employee.Email;
+sameValuesDifferentCompanyEmployee.EmployeeNumber = employee.EmployeeNumber;
+
+tp.SetVariable("CompanyA", companyA.ToJsonString(), "employees");
+tp.SetVariable("CompanyB", companyB.ToJsonString(), "employees");
+
+tp.SetVariable("EmployeeTitle", employee.Title ?? "Mgr.", "employees");
+tp.SetVariable("EmployeeNumber", employee.EmployeeNumber, "employees");
+tp.SetVariable("EmployeeFirstName", employee.FirstName, "employees");
+tp.SetVariable("EmployeeLastName", employee.LastName, "employees");
+tp.SetVariable("EmployeeEmail", employee.Email, "employees");
+tp.SetVariable("EmployeePhone", employee.Phone, "employees");
+
+tp.SetVariable("DuplicateEmailTitle", duplicateEmailEmployee.Title ?? "Mgr.", "employees");
+tp.SetVariable("DuplicateEmailNumber", duplicateEmailEmployee.EmployeeNumber, "employees");
+tp.SetVariable("DuplicateEmailFirstName", duplicateEmailEmployee.FirstName, "employees");
+tp.SetVariable("DuplicateEmailLastName", duplicateEmailEmployee.LastName, "employees");
+tp.SetVariable("DuplicateEmailPhone", duplicateEmailEmployee.Phone, "employees");
+
+tp.SetVariable("DuplicateNumberTitle", duplicateEmployeeNumberEmployee.Title ?? "Mgr.", "employees");
+tp.SetVariable("DuplicateNumberFirstName", duplicateEmployeeNumberEmployee.FirstName, "employees");
+tp.SetVariable("DuplicateNumberLastName", duplicateEmployeeNumberEmployee.LastName, "employees");
+tp.SetVariable("DuplicateNumberEmail", duplicateEmployeeNumberEmployee.Email, "employees");
+tp.SetVariable("DuplicateNumberPhone", duplicateEmployeeNumberEmployee.Phone, "employees");
 
 --- HTTP
+
+### Create Company A
+# @name CreateCompanyARequest
+POST {{APP_URL}}{{CompaniesEndpoint}}
+Content-Type: application/json
+
+{{CompanyA}}
+
+### Create Company B
+# @name CreateCompanyBRequest
+POST {{APP_URL}}{{CompaniesEndpoint}}
+Content-Type: application/json
+
+{{CompanyB}}
+
 ### Create Employee First Time
 # @name CreateEmployeeRequest
 POST {{APP_URL}}{{EmployeesEndpoint}}
 Content-Type: application/json
 
-{{Employee}}
+{
+  "title": "{{EmployeeTitle}}",
+  "employeeNumber": "{{EmployeeNumber}}",
+  "firstName": "{{EmployeeFirstName}}",
+  "lastName": "{{EmployeeLastName}}",
+  "email": "{{EmployeeEmail}}",
+  "phone": "{{EmployeePhone}}",
+  "companyId": {{CreateCompanyARequest.response.body.$.id}}
+}
 
-### Create Employee With Duplicate Email
+### Create Employee With Duplicate Email In Same Company
 # @name CreateEmployeeDuplicateEmailRequest
 POST {{APP_URL}}{{EmployeesEndpoint}}
 Content-Type: application/json
 
-{{DuplicateEmailEmployee}}
+{
+  "title": "{{DuplicateEmailTitle}}",
+  "employeeNumber": "{{DuplicateEmailNumber}}",
+  "firstName": "{{DuplicateEmailFirstName}}",
+  "lastName": "{{DuplicateEmailLastName}}",
+  "email": "{{EmployeeEmail}}",
+  "phone": "{{DuplicateEmailPhone}}",
+  "companyId": {{CreateCompanyARequest.response.body.$.id}}
+}
 
-### Create Employee With Duplicate Employee Number
+### Create Employee With Duplicate Employee Number In Same Company
 # @name CreateEmployeeDuplicateEmployeeNumberRequest
 POST {{APP_URL}}{{EmployeesEndpoint}}
 Content-Type: application/json
 
-{{DuplicateEmployeeNumberEmployee}}
+{
+  "title": "{{DuplicateNumberTitle}}",
+  "employeeNumber": "{{EmployeeNumber}}",
+  "firstName": "{{DuplicateNumberFirstName}}",
+  "lastName": "{{DuplicateNumberLastName}}",
+  "email": "{{DuplicateNumberEmail}}",
+  "phone": "{{DuplicateNumberPhone}}",
+  "companyId": {{CreateCompanyARequest.response.body.$.id}}
+}
+
+### Create Employee With Same Email And Employee Number In Different Company
+# @name CreateEmployeeSameValuesDifferentCompanyRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{
+  "title": "{{EmployeeTitle}}",
+  "employeeNumber": "{{EmployeeNumber}}",
+  "firstName": "{{EmployeeFirstName}}",
+  "lastName": "{{EmployeeLastName}}",
+  "email": "{{EmployeeEmail}}",
+  "phone": "{{EmployeePhone}}",
+  "companyId": {{CreateCompanyBRequest.response.body.$.id}}
+}
+
+### Delete Company A
+# @name DeleteCompanyARequest
+DELETE {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyARequest.response.body.$.id}}
+
+### Delete Company B
+# @name DeleteCompanyBRequest
+DELETE {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyBRequest.response.body.$.id}}
+
 
 --- TEST
 
 await tp.Test("First employee creation should return 201.", async () =>
 {
-var body = await tp.Responses["CreateEmployeeRequest"].GetBodyAsync();
-Console.WriteLine(body);
+    var body = await tp.Responses["CreateEmployeeRequest"].GetBodyAsync();
+    Console.WriteLine(body);
 
-Equal(201, tp.Responses["CreateEmployeeRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateEmployeeRequest"].StatusCode());
 });
 
 await tp.Test("Creating employee with duplicate email in same company should fail.", async () =>
 {
-var body = await tp.Responses["CreateEmployeeDuplicateEmailRequest"].GetBodyAsync();
-Console.WriteLine(body);
+    var body = await tp.Responses["CreateEmployeeDuplicateEmailRequest"].GetBodyAsync();
+    Console.WriteLine(body);
 
-Equal(400, tp.Responses["CreateEmployeeDuplicateEmailRequest"].StatusCode());
+    Equal(400, tp.Responses["CreateEmployeeDuplicateEmailRequest"].StatusCode());
 });
 
 await tp.Test("Creating employee with duplicate employee number in same company should fail.", async () =>
 {
-var body = await tp.Responses["CreateEmployeeDuplicateEmployeeNumberRequest"].GetBodyAsync();
-Console.WriteLine(body);
+    var body = await tp.Responses["CreateEmployeeDuplicateEmployeeNumberRequest"].GetBodyAsync();
+    Console.WriteLine(body);
 
-Equal(400, tp.Responses["CreateEmployeeDuplicateEmployeeNumberRequest"].StatusCode());
+    Equal(400, tp.Responses["CreateEmployeeDuplicateEmployeeNumberRequest"].StatusCode());
+});
+
+await tp.Test("Same email and employee number in different company should pass.", async () =>
+{
+    var body = await tp.Responses["CreateEmployeeSameValuesDifferentCompanyRequest"].GetBodyAsync();
+    Console.WriteLine(body);
+
+    Equal(201, tp.Responses["CreateEmployeeSameValuesDifferentCompanyRequest"].StatusCode());
+});
+
+tp.Test("Company A should be deleted.", () =>
+{
+    Equal(204, tp.Responses["DeleteCompanyARequest"].StatusCode());
+});
+
+tp.Test("Company B should be deleted.", () =>
+{
+    Equal(204, tp.Responses["DeleteCompanyBRequest"].StatusCode());
 });
 
 --- END

@@ -1,0 +1,216 @@
+--- TESTCASE 005-CreateHierarchyUniqueCodes
+
+--- INIT
+#load "../../.teapie/Definitions/Company/Company.csx"
+#load "../../.teapie/Definitions/Division/Division.csx"
+#load "../../.teapie/Definitions/Project/Project.csx"
+#load "../../.teapie/Definitions/Department/Department.csx"
+#load "../../.teapie/Definitions/Generator.csx"
+
+var companyA = GenerateCompany();
+var companyB = GenerateCompany();
+
+var divisionA = GenerateDivision();
+var divisionB = GenerateDivision();
+divisionB.Code = divisionA.Code;
+
+var projectA = GenerateProject();
+var projectB = GenerateProject();
+projectB.Code = projectA.Code;
+
+var departmentA = GenerateDepartment();
+var departmentB = GenerateDepartment();
+departmentB.Code = departmentA.Code;
+
+tp.SetVariable("CompanyA", companyA.ToJsonString(), "hierarchy");
+tp.SetVariable("CompanyB", companyB.ToJsonString(), "hierarchy");
+
+tp.SetVariable("DivisionAName", divisionA.Name, "hierarchy");
+tp.SetVariable("DivisionACode", divisionA.Code, "hierarchy");
+tp.SetVariable("DivisionBName", divisionB.Name, "hierarchy");
+
+tp.SetVariable("ProjectAName", projectA.Name, "hierarchy");
+tp.SetVariable("ProjectACode", projectA.Code, "hierarchy");
+tp.SetVariable("ProjectBName", projectB.Name, "hierarchy");
+
+tp.SetVariable("DepartmentAName", departmentA.Name, "hierarchy");
+tp.SetVariable("DepartmentACode", departmentA.Code, "hierarchy");
+tp.SetVariable("DepartmentBName", departmentB.Name, "hierarchy");
+
+--- HTTP
+
+### Create Company A
+# @name CreateCompanyARequest
+POST {{APP_URL}}{{CompaniesEndpoint}}
+Content-Type: application/json
+
+{{CompanyA}}
+
+### Create Company B
+# @name CreateCompanyBRequest
+POST {{APP_URL}}{{CompaniesEndpoint}}
+Content-Type: application/json
+
+{{CompanyB}}
+
+### Create Division A In Company A
+# @name CreateDivisionARequest
+POST {{APP_URL}}{{DivisionsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DivisionAName}}",
+  "code": "{{DivisionACode}}",
+  "parentId": {{CreateCompanyARequest.response.body.$.id}}
+}
+
+### Create Duplicate Division In Same Company
+# @name CreateDuplicateDivisionSameCompanyRequest
+POST {{APP_URL}}{{DivisionsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DivisionBName}}",
+  "code": "{{DivisionACode}}",
+  "parentId": {{CreateCompanyARequest.response.body.$.id}}
+}
+
+### Create Division With Same Code In Different Company
+# @name CreateDivisionSameCodeDifferentCompanyRequest
+POST {{APP_URL}}{{DivisionsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DivisionBName}}",
+  "code": "{{DivisionACode}}",
+  "parentId": {{CreateCompanyBRequest.response.body.$.id}}
+}
+
+### Create Division B In Company A
+# @name CreateDivisionBRequest
+POST {{APP_URL}}{{DivisionsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DivisionBName}}",
+  "code": "{{DivisionACode}}-B",
+  "parentId": {{CreateCompanyARequest.response.body.$.id}}
+}
+
+### Create Project A In Division A
+# @name CreateProjectARequest
+POST {{APP_URL}}{{ProjectsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{ProjectAName}}",
+  "code": "{{ProjectACode}}",
+  "parentId": {{CreateDivisionARequest.response.body.$.id}}
+}
+
+### Create Duplicate Project In Same Division
+# @name CreateDuplicateProjectSameDivisionRequest
+POST {{APP_URL}}{{ProjectsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{ProjectBName}}",
+  "code": "{{ProjectACode}}",
+  "parentId": {{CreateDivisionARequest.response.body.$.id}}
+}
+
+### Create Project With Same Code In Different Division
+# @name CreateProjectSameCodeDifferentDivisionRequest
+POST {{APP_URL}}{{ProjectsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{ProjectBName}}",
+  "code": "{{ProjectACode}}",
+  "parentId": {{CreateDivisionBRequest.response.body.$.id}}
+}
+
+### Create Department A In Project A
+# @name CreateDepartmentARequest
+POST {{APP_URL}}{{DepartmentsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DepartmentAName}}",
+  "code": "{{DepartmentACode}}",
+  "parentId": {{CreateProjectARequest.response.body.$.id}}
+}
+
+### Create Duplicate Department In Same Project
+# @name CreateDuplicateDepartmentSameProjectRequest
+POST {{APP_URL}}{{DepartmentsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DepartmentBName}}",
+  "code": "{{DepartmentACode}}",
+  "parentId": {{CreateProjectARequest.response.body.$.id}}
+}
+
+### Create Department With Same Code In Different Project
+# @name CreateDepartmentSameCodeDifferentProjectRequest
+POST {{APP_URL}}{{DepartmentsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DepartmentBName}}",
+  "code": "{{DepartmentACode}}",
+  "parentId": {{CreateProjectSameCodeDifferentDivisionRequest.response.body.$.id}}
+}
+
+### Delete Company A
+# @name DeleteCompanyARequest
+DELETE {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyARequest.response.body.$.id}}
+
+### Delete Company B
+# @name DeleteCompanyBRequest
+DELETE {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyBRequest.response.body.$.id}}
+
+--- TEST
+
+tp.Test("Companies should be created.", () =>
+{
+    Equal(201, tp.Responses["CreateCompanyARequest"].StatusCode());
+    Equal(201, tp.Responses["CreateCompanyBRequest"].StatusCode());
+});
+
+tp.Test("Duplicate division code in same company should fail.", () =>
+{
+    Equal(201, tp.Responses["CreateDivisionARequest"].StatusCode());
+    Equal(400, tp.Responses["CreateDuplicateDivisionSameCompanyRequest"].StatusCode());
+});
+
+tp.Test("Same division code in different company should pass.", () =>
+{
+    Equal(201, tp.Responses["CreateDivisionSameCodeDifferentCompanyRequest"].StatusCode());
+});
+
+tp.Test("Duplicate project code in same division should fail.", () =>
+{
+    Equal(201, tp.Responses["CreateDivisionBRequest"].StatusCode());
+    Equal(201, tp.Responses["CreateProjectARequest"].StatusCode());
+    Equal(400, tp.Responses["CreateDuplicateProjectSameDivisionRequest"].StatusCode());
+});
+
+tp.Test("Same project code in different division should pass.", () =>
+{
+    Equal(201, tp.Responses["CreateProjectSameCodeDifferentDivisionRequest"].StatusCode());
+});
+
+tp.Test("Duplicate department code in same project should fail.", () =>
+{
+    Equal(201, tp.Responses["CreateDepartmentARequest"].StatusCode());
+    Equal(400, tp.Responses["CreateDuplicateDepartmentSameProjectRequest"].StatusCode());
+});
+
+tp.Test("Same department code in different project should pass.", () =>
+{
+    Equal(201, tp.Responses["CreateDepartmentSameCodeDifferentProjectRequest"].StatusCode());
+});
+
+--- END

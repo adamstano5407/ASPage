@@ -109,21 +109,45 @@ public class CompanyController : ControllerBase
         return Ok(CompanyDto.CreateInstance(company));
     }
 
-    [HttpDelete("{id:int}")]
-    [EndpointName("DeleteCompany")]
-    [EndpointSummary("Delete company")]
-    [EndpointDescription("Deletes an existing company from the system.")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
-        var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == id);
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
+        var company = await _context.Companies
+            .FirstOrDefaultAsync(c => c.Id == id);
 
         if (company is null)
             return NotFound();
 
+        var employeeIds = await _context.Employees
+            .Where(e => e.CompanyId == id)
+            .Select(e => e.Id)
+            .ToListAsync();
+
+        await _context.Companies
+            .Where(c => c.ManagerId != null && employeeIds.Contains(c.ManagerId.Value))
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.ManagerId, (int?)null));
+
+        await _context.Divisions
+            .Where(d => d.ManagerId != null && employeeIds.Contains(d.ManagerId.Value))
+            .ExecuteUpdateAsync(s => s.SetProperty(d => d.ManagerId, (int?)null));
+
+        await _context.Projects
+            .Where(p => p.ManagerId != null && employeeIds.Contains(p.ManagerId.Value))
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.ManagerId, (int?)null));
+
+        await _context.Departments
+            .Where(d => d.ManagerId != null && employeeIds.Contains(d.ManagerId.Value))
+            .ExecuteUpdateAsync(s => s.SetProperty(d => d.ManagerId, (int?)null));
+
+        await _context.Employees
+            .Where(e => e.CompanyId == id)
+            .ExecuteDeleteAsync();
+
         _context.Companies.Remove(company);
         await _context.SaveChangesAsync();
+
+        await transaction.CommitAsync();
 
         return NoContent();
     }

@@ -219,6 +219,19 @@ GET {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}
 # @name GetCompanyDepartmentsAfterCompanyDivisionsDeleteRequest
 GET {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}/departments
 
+### Delete Company
+# @name DeleteCompanyRequest
+DELETE {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}
+
+### Get Company After Delete
+# @name GetCompanyAfterDeleteRequest
+GET {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}
+
+### Get Employee After Company Delete
+# @name GetEmployeeAfterCompanyDeleteRequest
+GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.id}}
+
+
 --- TEST
 using Newtonsoft.Json.Linq;
 
@@ -373,6 +386,21 @@ await tp.Test("Company should contain zero departments after deleting all divisi
 {
     var departments = await GetArray("GetCompanyDepartmentsAfterCompanyDivisionsDeleteRequest");
     Equal(0, departments.Count);
+});
+
+tp.Test("Company should be deleted.", () =>
+{
+    Equal(204, tp.Responses["DeleteCompanyRequest"].StatusCode());
+});
+
+tp.Test("Company should not be found after delete.", () =>
+{
+    Equal(404, tp.Responses["GetCompanyAfterDeleteRequest"].StatusCode());
+});
+
+tp.Test("Employee should be deleted by company cascade.", () =>
+{
+    Equal(404, tp.Responses["GetEmployeeAfterCompanyDeleteRequest"].StatusCode());
 });
 
 --- END
