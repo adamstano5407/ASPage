@@ -68,13 +68,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseRateLimiter();
+
 
 app.UseAuthorization();
 
-app.MapControllers()
-    .RequireRateLimiting("default");
+var controllers = app.MapControllers();
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseRateLimiter();
+    controllers.RequireRateLimiting("default");
+}
+    
 app.Run();
 
 

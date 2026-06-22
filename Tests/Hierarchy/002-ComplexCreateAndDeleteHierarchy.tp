@@ -276,16 +276,15 @@ await tp.Test("Created hierarchy should have correct relations.", async () =>
     dynamic departmentA = await tp.Responses["CreateDepartmentARequest"].GetBodyAsExpandoAsync();
     dynamic departmentB = await tp.Responses["CreateDepartmentBRequest"].GetBodyAsExpandoAsync();
     dynamic departmentC = await tp.Responses["CreateDepartmentCRequest"].GetBodyAsExpandoAsync();
-
+    
     True(company.id > 0);
-    True(employee.Id > 0);
-   
+    True(employee.id > 0);
+    
     Equal(company.id, divisionA.companyId);
     Equal(company.id, divisionB.companyId);
-
-  
-    Equal(employee.Id, divisionA.managerId);
-    Equal(employee.Id, divisionB.managerId);
+    
+    Equal(employee.id, divisionA.managerId);
+    Equal(employee.id, divisionB.managerId);
 
     Equal(divisionA.id, projectA.divisionId);
     Equal(divisionB.id, projectB.divisionId);

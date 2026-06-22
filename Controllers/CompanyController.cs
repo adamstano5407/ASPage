@@ -109,10 +109,14 @@ public class CompanyController : ControllerBase
         return Ok(CompanyDto.CreateInstance(company));
     }
 
+    [HttpDelete("{id:int}")]
+    [EndpointName("DeleteCompany")]
+    [EndpointSummary("Delete company")]
+    [EndpointDescription("Deletes a company by ID. All employees assigned to the company are removed first. The company hierarchy is then deleted automatically by cascade delete.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
-        await using var transaction = await _context.Database.BeginTransactionAsync();
-
         var company = await _context.Companies
             .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -144,10 +148,9 @@ public class CompanyController : ControllerBase
             .Where(e => e.CompanyId == id)
             .ExecuteDeleteAsync();
 
-        _context.Companies.Remove(company);
-        await _context.SaveChangesAsync();
-
-        await transaction.CommitAsync();
+        await _context.Companies
+            .Where(c => c.Id == id)
+            .ExecuteDeleteAsync();
 
         return NoContent();
     }

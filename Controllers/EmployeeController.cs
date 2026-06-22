@@ -125,7 +125,10 @@ namespace APIKros.Controllers
             if (request.Email is not null)
             {
                 var emailExists = await _context.Employees
-                    .AnyAsync(e => e.Email == request.Email && e.Id != id);
+                    .AnyAsync(e =>
+                        e.CompanyId == targetCompanyId &&
+                        e.Email == request.Email &&
+                        e.Id != id);
 
                 if (emailExists)
                     return BadRequest("Employee with this email already exists.");
@@ -160,6 +163,8 @@ namespace APIKros.Controllers
 
             if (employee is null)
                 return NotFound("Employee not found.");
+
+            await UnassignEmployeeFromLeadershipPositions(id);
 
             _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();
