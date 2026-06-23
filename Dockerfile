@@ -10,6 +10,7 @@ RUN usermod -u ${UID} ubuntu && groupmod -g ${GID} ubuntu
 
 WORKDIR /src
 
+RUN apt-get update && apt-get install -y gosu
 RUN dotnet tool install --tool-path /usr/local/bin dotnet-ef
 RUN dotnet tool install --tool-path /usr/local/bin TeaPie.Tool
 
