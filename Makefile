@@ -10,7 +10,7 @@ fix-host-permissions:
 	sudo chown -R $(USER):$(USER) ./bin ./obj && dotnet restore
 
 migrate:
-	docker exec -it api dotnet ef database update
+	docker exec -it -u $$(id -u):$$(id -g) api dotnet ef database update
 
 seed:
 	curl -X POST http://localhost:8080/dev/seed

@@ -4,6 +4,7 @@ obj/
 .idea/
 .vs/
 .vscode/
+Docker/.env
 
 *.user
 *.suo

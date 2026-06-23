@@ -1,14 +1,14 @@
 ﻿services:
   api:
     build:
-      context: ../../../
-      dockerfile: APIKros/Docker/prod/Dockerfile
-    container_name: api
+      context: ../
+      dockerfile: ./Docker/Dockerfile.prod
+    container_name: api-prod
     ports:
-      - "127.0.0.1:80:80"
+      - "127.0.0.1:${API_PORT}:5400"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_URLS=http://0.0.0.0:5400
       - DB_HOST=sqlserver
       - DB_PORT=1433
       - DB_NAME=${DB_NAME}
@@ -23,9 +23,9 @@
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2025-latest
-    container_name: sqlserver
+    container_name: sqlserver-prod
     ports:
-      - "127.0.0.1:${DB_PORT}:1433"
+      - "127.0.0.1:${SQL_PORT}:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql
     environment:

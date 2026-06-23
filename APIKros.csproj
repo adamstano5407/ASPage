@@ -26,6 +26,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..">
+      <Link>Docker\.dockerignore</Link>
+      <DependentUpon>Dockerfile.prod</DependentUpon>
+    </None>
     <None Include="..\. ">
       <DependentUpon>Dockerfile</DependentUpon>
       <Link>Docker\prod\.dockerignore</Link>
