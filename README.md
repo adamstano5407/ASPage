@@ -65,10 +65,12 @@ make up
 ```
 ## Fix permissions
 
-If your IDE cannot access generated files, you can fix local permissions:
+Docker normally runs the application as the host user.
+
+If Rider/VisualStudioCode/IntelliSense cannot access .bin or .obj files on the host, run:
 
 ```bash
-make fix-permissions
+make fix-host-permissions
 ```
 
 ## Database
