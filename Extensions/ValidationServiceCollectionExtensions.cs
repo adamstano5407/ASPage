@@ -9,7 +9,6 @@ public static class ValidationServiceCollectionExtensions
     {
         services.AddValidatorsFromAssemblyContaining<AssignManagerValidator>(
             ServiceLifetime.Scoped);
-
         return services;
     }
 }

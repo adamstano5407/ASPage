@@ -1,12 +1,9 @@
 using APIKros.Data;
+using APIKros.Extensions;
 using APIKros.Seeders;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
-using APIKros.Validators;
-using APIKros.Validators.Employee;
-using FluentValidation;
 using Microsoft.AspNetCore.RateLimiting;
-using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,11 +19,11 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddRepositories();
+builder.Services.AddServices();
 
 //fluent validation
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateEmployeeRequestValidator>();
+builder.Services.AddValidation();
 
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -44,7 +41,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-
+app.MapRoutes();
 // CORS can be configured later when a frontend application is added.
 
 if (app.Environment.IsDevelopment())
@@ -63,10 +60,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-
 app.UseHttpsRedirection();
-
-
 
 app.UseAuthorization();
 

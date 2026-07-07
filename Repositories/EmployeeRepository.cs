@@ -1,4 +1,5 @@
 using APIKros.Data;
+using APIKros.DTOs.Employee;
 using APIKros.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,8 @@ public interface IEmployeeRepository : IRepository<Employee, int>
     Task UnassignEmployeeFromLeadershipPositionsAsync(int employeeId);
     
     Task DeleteEmployeesFromCompany(int companyId);
+    
+    Task<IEnumerable<Employee>> GetEmployeesByCompanyId(int companyId);
 }
 
 public class EmployeeRepository : Repository<Employee, int>, IEmployeeRepository
@@ -39,5 +42,11 @@ public class EmployeeRepository : Repository<Employee, int>, IEmployeeRepository
     public async Task DeleteEmployeesFromCompany(int companyId)
     {
         await DbContext.Employees.Where(e => e.CompanyId == companyId).ExecuteDeleteAsync();
+    }
+
+    public async Task<IEnumerable<Employee>> GetEmployeesByCompanyId(int companyId)
+    {
+        var employees = await DbContext.Employees.Where(e => e.CompanyId == companyId).ToListAsync();
+        return employees;
     }
 }

@@ -10,7 +10,7 @@ public static class RepositoryServiceCollectionExtensions
         services.AddScoped<IDivisionRepository, DivisionRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
-
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         return services;
     }
 }

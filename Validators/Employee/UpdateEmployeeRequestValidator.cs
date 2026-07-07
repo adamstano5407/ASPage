@@ -12,20 +12,25 @@ public class UpdateEmployeeRequestValidator : AbstractValidator<UpdateEmployeeRe
     public UpdateEmployeeRequestValidator(AppDbContext context)
     {
         _context = context;
-        
-        
+
+        RuleFor(x => x.Id).MustAsync((id, cancellation) =>
+            ValidationUtils.EntityExists<Models.Employee>(
+                _context,
+                id,
+                cancellation
+            )).WithMessage("Employee does not exist.");
         
         RuleFor(x => x.FirstName)
-            .NotEmpty().WithMessage("First name is required.")
-            .MaximumLength(100).WithMessage("First name must not exceed 100 characters.")
+            .NotEmpty()
+            .MaximumLength(100)
             .Matches(@"^[\p{L}\s'-]+$")
-            .WithMessage("First name can contain only letters, spaces, hyphens and apostrophes.");
+            .When(x => x.FirstName is not null);
 
         RuleFor(x => x.LastName)
-            .NotEmpty().WithMessage("Last name is required.")
-            .MaximumLength(100).WithMessage("Last name must not exceed 100 characters.")
+            .NotEmpty()
+            .MaximumLength(100)
             .Matches(@"^[\p{L}\s'-]+$")
-            .WithMessage("Last name can contain only letters, spaces, hyphens and apostrophes.");
+            .When(x => x.LastName is not null);
 
         RuleFor(x => x.Email)
             .EmailAddress().WithMessage("Email has invalid format.")

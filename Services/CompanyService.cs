@@ -1,16 +1,19 @@
 using APIKros.DTOs.Company;
 using APIKros.DTOs.Division;
+using APIKros.DTOs.Employee;
 using APIKros.Exceptions;
 using APIKros.Models;
 using APIKros.Repositories;
 using APIKros.Requests;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 
 namespace APIKros.Services;
 
 
 public interface ICompanyService : IHierarchyNodeService<CompanyDto, CreateCompanyRequest, UpdateCompanyRequest, int>, IHasChildrenService<DivisionDto, int>
 {
+    public Task<IEnumerable<EmployeeDto>> GetAllEmployees(int companyId);
 }
 
 public class CompanyService : ICompanyService
@@ -77,12 +80,13 @@ public class CompanyService : ICompanyService
     public async Task UpdateAsync(int id, UpdateCompanyRequest request)
     {
         request.Id = id;
-
-        var company = await _repo.GetByIdAsync(id)
-                      ?? throw new NotFoundException();
+        
 
         await _updateValidator.ValidateAndThrowAsync(request);
 
+        var company = await _repo.GetByIdAsync(id)
+                      ?? throw new NotFoundException();
+        
         if (request.ManagerId.HasValue)
         {
             company.ManagerId = request.ManagerId.Value;
@@ -142,5 +146,11 @@ public class CompanyService : ICompanyService
         return divisions
             .Select(DivisionDto.CreateInstance)
             .ToList();
+    }
+
+    public async Task<IEnumerable<EmployeeDto>> GetAllEmployees(int companyId)
+    {
+        var employees = await _empRepo.GetEmployeesByCompanyId(companyId);
+        return employees.Select(EmployeeDto.CreateInstance).ToList(); 
     }
 }

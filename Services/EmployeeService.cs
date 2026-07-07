@@ -1,3 +1,4 @@
+using APIKros.DTOs.Company;
 using APIKros.DTOs.Employee;
 using APIKros.Exceptions;
 using APIKros.Models;
@@ -12,24 +13,26 @@ public interface IEmployeeService : IService<EmployeeDto, CreateEmployeeRequest,
 {
     public Task ChangeCompany(int employeeId, ChangeCompanyRequest request);
     public Task UnassignEmployeeFromLeadershipPositions(int employeeId);
-    public Task GetCompany(int employeeId);
+    public Task<CompanyDto> GetCompany(int employeeId);
 }
 
 
 public class EmployeeService : IEmployeeService
 {
     private readonly IEmployeeRepository _employeeRepository;
+    private readonly ICompanyRepository _companyRepository;
     
     private readonly IValidator<CreateEmployeeRequest> _createEmployeeVal;
     private readonly IValidator<UpdateEmployeeRequest> _updateEmployeeVal;
     private readonly IValidator<ChangeCompanyRequest> _changeCompanyVal;
 
-    public EmployeeService(IEmployeeRepository employeeRepository, IValidator<CreateEmployeeRequest> createEmployeeVal,  IValidator<UpdateEmployeeRequest> updateEmployeeVal, IValidator<ChangeCompanyRequest> changeCompanyVal)
+    public EmployeeService(IEmployeeRepository employeeRepository, IValidator<CreateEmployeeRequest> createEmployeeVal,  IValidator<UpdateEmployeeRequest> updateEmployeeVal, IValidator<ChangeCompanyRequest> changeCompanyVal, ICompanyRepository companyRepository)
     {
         _employeeRepository = employeeRepository;
         _createEmployeeVal = createEmployeeVal;
         _updateEmployeeVal = updateEmployeeVal;
         _changeCompanyVal = changeCompanyVal;
+        _companyRepository = companyRepository;
     }
     
     public async Task<EmployeeDto?> GetAsync(int id)
@@ -60,7 +63,7 @@ public class EmployeeService : IEmployeeService
         };
 
         await _employeeRepository.CreateAsync(employee);
-
+        await _employeeRepository.SaveChangesAsync();
         return EmployeeDto.CreateInstance(employee);
     }
 
@@ -69,7 +72,7 @@ public class EmployeeService : IEmployeeService
         request.Id = id;
 
         var employee = await _employeeRepository.GetByIdAsync(id)
-                       ?? throw new NotFoundException("Employee not found.");
+                       ?? throw new NotFoundException();
 
         await _updateEmployeeVal.ValidateAndThrowAsync(request);
 
@@ -92,23 +95,37 @@ public class EmployeeService : IEmployeeService
 
     public async Task DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var employee = await _employeeRepository.GetByIdAsync(id);
+        if (employee == null) throw new NotFoundException();
+        await UnassignEmployeeFromLeadershipPositions(id);
+        await _employeeRepository.DeleteAsync(id);
+        await _employeeRepository.SaveChangesAsync();
     }
 
     public async Task ChangeCompany(int employeeId ,ChangeCompanyRequest request)
     {
         request.EmployeeId = employeeId;
         await _changeCompanyVal.ValidateAndThrowAsync(request);
-        
     }
 
     public async Task UnassignEmployeeFromLeadershipPositions(int employeeId)
     {
+        var employeeExists = await _employeeRepository.ExistsAsync(employeeId);
+        if (!employeeExists)
+        {
+            throw new NotFoundException();
+        }
         await _employeeRepository.UnassignEmployeeFromLeadershipPositionsAsync(employeeId);
     }
 
-    public Task GetCompany(int employeeId)
+    public async Task<CompanyDto> GetCompany(int employeeId)
     {
-        throw new NotImplementedException();
+        var employee = await _employeeRepository.GetByIdAsync(employeeId);
+        if (employee == null)
+        {
+            throw new NotFoundException();
+        }
+        var company = await _companyRepository.GetByIdAsync(employee.CompanyId);
+        return company == null ? throw new NotFoundException() : CompanyDto.CreateInstance(company);
     }
 }
