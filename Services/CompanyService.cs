@@ -3,6 +3,7 @@ using APIKros.Exceptions;
 using APIKros.Models;
 using APIKros.Repositories;
 using APIKros.Requests;
+using AutoMapper;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,36 +22,34 @@ public class CompanyService : ICompanyService
     private readonly IValidator<CreateCompanyRequest> _createValidator;
     private readonly IValidator<UpdateCompanyRequest> _updateValidator;
     private readonly IValidator<AssignManagerRequest> _assignManagerValidator;
-
+    private readonly IMapper _mapper;
     public CompanyService(
         ICompanyRepository repo,
         IEmployeeRepository empRepo,
         IValidator<CreateCompanyRequest> createValidator,
         IValidator<UpdateCompanyRequest> updateValidator,
-        IValidator<AssignManagerRequest> assignManagerValidator
-        )
+        IValidator<AssignManagerRequest> assignManagerValidator, IMapper mapper)
     {
         _repo = repo;
         _empRepo = empRepo;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _assignManagerValidator = assignManagerValidator;
+        _mapper = mapper;
     }
     
     public async Task<CompanyDto?> GetAsync(int id)
     {
         var company = await _repo.GetByIdAsync(id);
 
-        return company is null ? throw new NotFoundException() : CompanyDto.CreateInstance(company);
+        return company is null ? throw new NotFoundException() : _mapper.Map<CompanyDto>(company);
     }
 
     public async Task<IEnumerable<CompanyDto>> GetAllAsync()
     {
         var companies = await _repo.GetAllAsync();
 
-        return companies
-            .Select(CompanyDto.CreateInstance)
-            .ToList();
+        return _mapper.Map<IReadOnlyList<CompanyDto>>(companies);
     }
 
     public async Task<CompanyDto> CreateAsync(CreateCompanyRequest request)
@@ -72,7 +71,7 @@ public class CompanyService : ICompanyService
         await _repo.CreateAsync(company);
         await _repo.SaveChangesAsync();
 
-        return CompanyDto.CreateInstance(company);
+        return _mapper.Map<CompanyDto>(company);
     }
 
     public async Task UpdateAsync(int id, UpdateCompanyRequest request)
@@ -137,18 +136,16 @@ public class CompanyService : ICompanyService
         
     }
 
-    public async Task<ICollection<DivisionDto>> GetChildrenAsync(int id)
+    public async Task<IEnumerable<DivisionDto>> GetChildrenAsync(int id)
     {
         var divisions = await _repo.GetAllChildNodesAsync(id);
 
-        return divisions
-            .Select(DivisionDto.CreateInstance)
-            .ToList();
+        return _mapper.Map<IReadOnlyList<DivisionDto>>(divisions);
     }
 
     public async Task<IEnumerable<EmployeeDto>> GetAllEmployees(int companyId)
     {
         var employees = await _empRepo.GetEmployeesByCompanyId(companyId);
-        return employees.Select(EmployeeDto.CreateInstance).ToList(); 
+        return _mapper.Map<IReadOnlyList<EmployeeDto>>(employees);
     }
 }

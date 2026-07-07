@@ -3,6 +3,7 @@ using APIKros.Exceptions;
 using APIKros.Models;
 using APIKros.Repositories;
 using APIKros.Requests;
+using AutoMapper;
 using FluentValidation;
 
 namespace APIKros.Services;
@@ -21,37 +22,33 @@ public class ProjectService : IProjectService
     private readonly IValidator<CreateProjectRequest> _createValidator;
     private readonly IValidator<UpdateProjectRequest> _updateValidator;
     private readonly IValidator<AssignManagerRequest> _assignManagerValidator;
-
+    private readonly  IMapper _mapper;
     public ProjectService(
         IProjectRepository projectRepo,
         IEmployeeRepository employeeRepo,
         IValidator<CreateProjectRequest> createValidator,
         IValidator<UpdateProjectRequest> updateValidator,
-        IValidator<AssignManagerRequest> assignManagerValidator)
+        IValidator<AssignManagerRequest> assignManagerValidator, IMapper mapper)
     {
         _projectRepo = projectRepo;
         _employeeRepo = employeeRepo;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _assignManagerValidator = assignManagerValidator;
+        _mapper = mapper;
     }
 
     public async Task<ProjectDto?> GetAsync(int id)
     {
         var project = await _projectRepo.GetByIdAsync(id);
-
-        return project is null
-            ? null
-            : ProjectDto.CreateInstance(project);
+        return project == null ? throw new NotFoundException() : _mapper.Map<ProjectDto?>(project);
     }
 
     public async Task<IEnumerable<ProjectDto>> GetAllAsync()
     {
         var projects = await _projectRepo.GetAllAsync();
 
-        return projects
-            .Select(ProjectDto.CreateInstance)
-            .ToList();
+        return _mapper.Map<IReadOnlyList<ProjectDto>>(projects);
     }
 
     public async Task<ProjectDto> CreateAsync(CreateProjectRequest request)
@@ -68,7 +65,7 @@ public class ProjectService : IProjectService
         await _projectRepo.CreateAsync(project);
         await _projectRepo.SaveChangesAsync();
 
-        return ProjectDto.CreateInstance(project);
+        return _mapper.Map<ProjectDto>(project);
     }
 
     public async Task UpdateAsync(int id, UpdateProjectRequest request)
@@ -125,35 +122,27 @@ public class ProjectService : IProjectService
         await _projectRepo.SaveChangesAsync();
     }
 
-    public async Task<DivisionDto?> GetParentAsync(int id)
+    public async Task<DivisionDto> GetParentAsync(int id)
     {
         await GetRequiredProjectAsync(id);
 
         var parent = await _projectRepo.GetParentOfNodeAsync(id);
-
-        return parent is null
-            ? null
-            : DivisionDto.CreateInstance(parent);
+        return parent is null ? throw new MissingParentException() : _mapper.Map<DivisionDto>(parent);
     }
 
-    public async Task<ICollection<DepartmentDto>> GetChildrenAsync(int id)
+    public async Task<IEnumerable<DepartmentDto>> GetChildrenAsync(int id)
     {
         await GetRequiredProjectAsync(id);
 
         var departments = await _projectRepo.GetAllChildNodesAsync(id);
 
-        return departments
-            .Select(DepartmentDto.CreateInstance)
-            .ToList();
+        return _mapper.Map<IReadOnlyList<DepartmentDto>>(departments);
     }
 
     private async Task<Project> GetRequiredProjectAsync(int id)
     {
         var project = await _projectRepo.GetByIdAsync(id);
 
-        if (project is null)
-            throw new NotFoundException();
-
-        return project;
+        return project ?? throw new NotFoundException();
     }
 }

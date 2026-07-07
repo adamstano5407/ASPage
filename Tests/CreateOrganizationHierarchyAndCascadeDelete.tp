@@ -1,26 +1,27 @@
---- TESTCASE 001-CreateEmployee
+--- TESTCASE 001-CreateOrganizationHierarchyAndCascadeDelete
 
 --- INIT
-#load "../../.teapie/Definitions/Company/Company.csx"
-#load "../../.teapie/Definitions/Division/Division.csx"
-#load "../../.teapie/Definitions/Project/Project.csx"
-#load "../../.teapie/Definitions/Department/Department.csx"
-#load "../../.teapie/Definitions/Employee/Employee.csx"
-#load "../../.teapie/Definitions/Generator.csx"
-#load "../../.teapie/Definitions/SetObjectVariable.csx"
+#load "../.teapie/Definitions/Company/Company.csx"
+#load "../.teapie/Definitions/Division/Division.csx"
+#load "../.teapie/Definitions/Project/Project.csx"
+#load "../.teapie/Definitions/Department/Department.csx"
+#load "../.teapie/Definitions/Employee/Employee.csx"
+#load "../.teapie/Definitions/Generator.csx"
+#load "../.teapie/Definitions/SetObjectVariable.csx"
 
+const string Tag = "hierarchy-001";
 
 var company = GenerateCompany();
+var employee = GenerateEmployee();
 var division = GenerateDivision();
 var project = GenerateProject();
 var department = GenerateDepartment();
-var employee = GenerateEmployee();
 
-tp.SetVariable("Company", company.ToJsonString(), "hierarchy");
-SetObjectVariables<Employee>("Employee", employee);
-SetObjectVariables("Division", division);
-SetObjectVariables("Project", project);
-SetObjectVariables("Department", department);
+tp.SetVariable("Company", company.ToJsonString(), Tag);
+SetObjectVariables("Employee", employee, Tag);
+SetObjectVariables("Division", division, Tag);
+SetObjectVariables("Project", project, Tag);
+SetObjectVariables("Department", department, Tag);
 
 
 --- HTTP
@@ -83,6 +84,27 @@ Content-Type: application/json
   "parentId": {{CreateProjectRequest.response.body.$.id}}
 }
 
+### Get Company
+# @name GetCompanyRequest
+GET {{APP_URL}}/api/companies/{{CreateCompanyRequest.response.body.$.id}}
+
+### Get Employee
+# @name GetEmployeeRequest
+GET {{APP_URL}}/api/employees/{{CreateEmployeeRequest.response.body.$.id}}
+
+### Get Division
+# @name GetDivisionRequest
+GET {{APP_URL}}/api/divisions/{{CreateDivisionRequest.response.body.$.id}}
+
+### Get Project
+# @name GetProjectRequest
+GET {{APP_URL}}/api/projects/{{CreateProjectRequest.response.body.$.id}}
+
+### Get Department
+# @name GetDepartmentRequest
+GET {{APP_URL}}/api/departments/{{CreateDepartmentRequest.response.body.$.id}}
+
+
 ### Delete Company
 # @name DeleteCompanyRequest
 DELETE {{APP_URL}}/api/companies/{{CreateCompanyRequest.response.body.$.id}}
@@ -108,6 +130,7 @@ GET {{APP_URL}}/api/projects/{{CreateProjectRequest.response.body.$.id}}
 GET {{APP_URL}}/api/departments/{{CreateDepartmentRequest.response.body.$.id}}
 
 --- TEST
+const string Tag = "hierarchy-001";
 
 
 tp.Test("Hierarchy should be created.", () =>
@@ -119,14 +142,23 @@ tp.Test("Hierarchy should be created.", () =>
     Equal(201, tp.Responses["CreateDepartmentRequest"].StatusCode());
 });
 
-await tp.Test("Created entities should have ids.", async () =>
+tp.Test("Created hierarchy should be retrievable.", () =>
 {
-    dynamic company = await tp.Responses["CreateCompanyRequest"].GetBodyAsExpandoAsync();
-    dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
-    dynamic division = await tp.Responses["CreateDivisionRequest"].GetBodyAsExpandoAsync();
-    dynamic project = await tp.Responses["CreateProjectRequest"].GetBodyAsExpandoAsync();
-    dynamic department = await tp.Responses["CreateDepartmentRequest"].GetBodyAsExpandoAsync();
+    Equal(200, tp.Responses["GetCompanyRequest"].StatusCode());
+    Equal(200, tp.Responses["GetEmployeeRequest"].StatusCode());
+    Equal(200, tp.Responses["GetDivisionRequest"].StatusCode());
+    Equal(200, tp.Responses["GetProjectRequest"].StatusCode());
+    Equal(200, tp.Responses["GetDepartmentRequest"].StatusCode());
+});
 
+dynamic company = await tp.Responses["CreateCompanyRequest"].GetBodyAsExpandoAsync();
+dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
+dynamic division = await tp.Responses["CreateDivisionRequest"].GetBodyAsExpandoAsync();
+dynamic project = await tp.Responses["CreateProjectRequest"].GetBodyAsExpandoAsync();
+dynamic department = await tp.Responses["CreateDepartmentRequest"].GetBodyAsExpandoAsync();
+
+tp.Test("Created entities should have ids.", () =>
+{
     True(company.id > 0);
     True(employee.id > 0);
     True(division.id > 0);
@@ -134,40 +166,25 @@ await tp.Test("Created entities should have ids.", async () =>
     True(department.id > 0);
 });
 
-await tp.Test("Employee should belong to created company.", async () =>
+tp.Test("Employee should belong to created company.", () =>
 {
-    dynamic company = await tp.Responses["CreateCompanyRequest"].GetBodyAsExpandoAsync();
-    dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
-
     Equal(company.id, employee.companyId);
 });
 
-await tp.Test("Division should belong to company and use employee as manager.", async () =>
+tp.Test("Division should belong to company and use employee as manager.", () =>
 {
-    dynamic company = await tp.Responses["CreateCompanyRequest"].GetBodyAsExpandoAsync();
-    dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
-    dynamic division = await tp.Responses["CreateDivisionRequest"].GetBodyAsExpandoAsync();
-
     Equal(company.id, division.companyId);
     Equal(employee.id, division.managerId);
 });
 
-await tp.Test("Project should belong to division and use employee as manager.", async () =>
+tp.Test("Project should belong to division and use employee as manager.", () =>
 {
-    dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
-    dynamic division = await tp.Responses["CreateDivisionRequest"].GetBodyAsExpandoAsync();
-    dynamic project = await tp.Responses["CreateProjectRequest"].GetBodyAsExpandoAsync();
-
     Equal(division.id, project.divisionId);
     Equal(employee.id, project.managerId);
 });
 
-await tp.Test("Department should belong to project and use employee as manager.", async () =>
+tp.Test("Department should belong to project and use employee as manager.", () =>
 {
-    dynamic employee = await tp.Responses["CreateEmployeeRequest"].GetBodyAsExpandoAsync();
-    dynamic project = await tp.Responses["CreateProjectRequest"].GetBodyAsExpandoAsync();
-    dynamic department = await tp.Responses["CreateDepartmentRequest"].GetBodyAsExpandoAsync();
-
     Equal(project.id, department.projectId);
     Equal(employee.id, department.managerId);
 });
@@ -179,11 +196,20 @@ tp.Test("Company should be deleted.", () =>
 
 tp.Test("Deleted hierarchy should not be found.", () =>
 {
-    Equal(404, tp.Responses["GetDeletedCompanyRequest"].StatusCode());
-    Equal(404, tp.Responses["GetDeletedEmployeeRequest"].StatusCode());
-    Equal(404, tp.Responses["GetDeletedDivisionRequest"].StatusCode());
-    Equal(404, tp.Responses["GetDeletedProjectRequest"].StatusCode());
-    Equal(404, tp.Responses["GetDeletedDepartmentRequest"].StatusCode());
+    var deletedRequestNames = new[]
+    {
+        "GetDeletedCompanyRequest",
+        "GetDeletedEmployeeRequest",
+        "GetDeletedDivisionRequest",
+        "GetDeletedProjectRequest",
+        "GetDeletedDepartmentRequest"
+    };
+
+    foreach (var name in deletedRequestNames)
+        Equal(404, tp.Responses[name].StatusCode());
 });
+
+tp.RemoveVariablesWithTag("hierarchy-001");
+
 
 --- END

@@ -1,6 +1,6 @@
 namespace APIKros.DTOs;
 
-public class EmployeeDto : IDto<Models.Employee, EmployeeDto>
+public class EmployeeDto : IDto
 {
     public int Id { get; set; }
     
@@ -12,18 +12,5 @@ public class EmployeeDto : IDto<Models.Employee, EmployeeDto>
     public string Phone { get; set; } = null!;
     public int CompanyId { get; set; } 
 
-    public static EmployeeDto CreateInstance(Models.Employee employee)
-    {
-        return new EmployeeDto
-        {
-            Id = employee.Id,
-            Title = employee.Title,
-            FirstName = employee.FirstName,
-            LastName = employee.LastName,
-            Email = employee.Email,
-            Phone = employee.Phone,
-            EmployeeNumber =  employee.EmployeeNumber,
-            CompanyId = employee.CompanyId
-        };
-    }
+    
 }

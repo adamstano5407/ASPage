@@ -12,10 +12,10 @@ public interface IHierarchyNodeService<TResponse, TCreateRequest, TUpdateRequest
 
 public interface IHasChildrenService<TChildResponse, TK>
 {
-    Task<ICollection<TChildResponse>> GetChildrenAsync(TK id);
+    Task<IEnumerable<TChildResponse>> GetChildrenAsync(TK id);
 }
 
 public interface IHasParentService<TParentResponse, TK>
 {
-    Task<TParentResponse?> GetParentAsync(TK id);
+    Task<TParentResponse> GetParentAsync(TK id);
 }

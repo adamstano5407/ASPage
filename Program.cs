@@ -26,7 +26,7 @@ builder.Services.AddServices();
 
 //fluent validation
 builder.Services.AddValidation();
-
+builder.Services.AddMappings();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

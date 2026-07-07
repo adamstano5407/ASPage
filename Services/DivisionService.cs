@@ -3,6 +3,7 @@ using APIKros.Exceptions;
 using APIKros.Models;
 using APIKros.Repositories;
 using APIKros.Requests;
+using AutoMapper;
 using FluentValidation;
 
 namespace APIKros.Services;
@@ -19,6 +20,7 @@ public class DivisionService : IDivisionService
     private readonly IValidator<CreateDivisionRequest> _createValidator;
     private readonly IValidator<UpdateDivisionRequest> _updateValidator;
     private readonly IValidator<AssignManagerRequest> _assignManagerValidator;
+    private readonly IMapper _mapper;
     
     public DivisionService(
         IDivisionRepository divisionRepo,
@@ -26,7 +28,7 @@ public class DivisionService : IDivisionService
         IEmployeeRepository employeeRepo,
         IValidator<CreateDivisionRequest> createValidator,
         IValidator<UpdateDivisionRequest> updateValidator,
-        IValidator<AssignManagerRequest> assignManagerValidator)
+        IValidator<AssignManagerRequest> assignManagerValidator, IMapper mapper)
     {
         _divisionRepo = divisionRepo;
         _companyRepo = companyRepo;
@@ -34,24 +36,20 @@ public class DivisionService : IDivisionService
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _assignManagerValidator = assignManagerValidator;
+        _mapper = mapper;
     }
     
     public async Task<DivisionDto?> GetAsync(int id)
     {
         var division = await _divisionRepo.GetByIdAsync(id);
-
-        return division is null
-            ? null
-            : DivisionDto.CreateInstance(division);
+        return division is null ? throw new NotFoundException() : _mapper.Map<DivisionDto?>(division);
     }
 
     public async Task<IEnumerable<DivisionDto>> GetAllAsync()
     {
         var divisions = await _divisionRepo.GetAllAsync();
 
-        return divisions
-            .Select(DivisionDto.CreateInstance)
-            .ToList();
+        return _mapper.Map<IReadOnlyList<DivisionDto>>(divisions);
     }
 
     public async Task<DivisionDto> CreateAsync(CreateDivisionRequest request)
@@ -72,7 +70,7 @@ public class DivisionService : IDivisionService
 
         await _divisionRepo.CreateAsync(division);
 
-        return DivisionDto.CreateInstance(division);
+        return _mapper.Map<DivisionDto>(division);
     }
 
     public async Task UpdateAsync(int id, UpdateDivisionRequest request)
@@ -142,7 +140,7 @@ public class DivisionService : IDivisionService
         
     }
 
-    public async Task<ICollection<ProjectDto>> GetChildrenAsync(int id)
+    public async Task<IEnumerable<ProjectDto>> GetChildrenAsync(int id)
     {
         var division = await _divisionRepo.GetByIdAsync(id);
 
@@ -151,22 +149,18 @@ public class DivisionService : IDivisionService
 
         var projects = await _divisionRepo.GetAllChildNodesAsync(id);
 
-        return projects
-            .Select(ProjectDto.CreateInstance)
-            .ToList();
+        return _mapper.Map<IReadOnlyList<ProjectDto>>(projects);
     }
 
-    public async Task<CompanyDto?> GetParentAsync(int id)
+    public async Task<CompanyDto> GetParentAsync(int id)
     {
         var division = await _divisionRepo.GetByIdAsync(id);
 
         if (division is null)
-            throw new NotFoundException($"Division with id {id} was not found.");
+            throw new MissingParentException();
 
         var company = await _divisionRepo.GetParentOfNodeAsync(id);
 
-        return company is null
-            ? null
-            : CompanyDto.CreateInstance(company);
+        return _mapper.Map<CompanyDto>(company);
     }
 }

@@ -3,6 +3,7 @@ using APIKros.Exceptions;
 using APIKros.Models;
 using APIKros.Repositories;
 using APIKros.Requests;
+using AutoMapper;
 using FluentValidation;
 
 namespace APIKros.Services;
@@ -21,6 +22,7 @@ public class DepartmentService : IDepartmentService
     private readonly IValidator<CreateDepartmentRequest> _createValidator;
     private readonly IValidator<UpdateDepartmentRequest> _updateValidator;
     private readonly IValidator<AssignManagerRequest> _assignManagerValidator;
+    private readonly IMapper _mapper;
 
     public DepartmentService(
         IDepartmentRepository departmentRepo,
@@ -28,7 +30,7 @@ public class DepartmentService : IDepartmentService
         IEmployeeRepository employeeRepo,
         IValidator<CreateDepartmentRequest> createValidator,
         IValidator<UpdateDepartmentRequest> updateValidator,
-        IValidator<AssignManagerRequest> assignManagerValidator)
+        IValidator<AssignManagerRequest> assignManagerValidator, IMapper mapper)
     {
         _departmentRepo = departmentRepo;
         _projectRepo = projectRepo;
@@ -36,24 +38,21 @@ public class DepartmentService : IDepartmentService
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _assignManagerValidator = assignManagerValidator;
+        _mapper = mapper;
     }
 
     public async Task<DepartmentDto?> GetAsync(int id)
     {
         var department = await _departmentRepo.GetByIdAsync(id);
 
-        return department is null
-            ? null
-            : DepartmentDto.CreateInstance(department);
+        return _mapper.Map<DepartmentDto?>(department);
     }
 
     public async Task<IEnumerable<DepartmentDto>> GetAllAsync()
     {
         var departments = await _departmentRepo.GetAllAsync();
 
-        return departments
-            .Select(DepartmentDto.CreateInstance)
-            .ToList();
+        return _mapper.Map<IReadOnlyList<DepartmentDto>>(departments);
     }
 
     public async Task<DepartmentDto> CreateAsync(CreateDepartmentRequest request)
@@ -75,7 +74,7 @@ public class DepartmentService : IDepartmentService
         await _departmentRepo.CreateAsync(department);
         await _departmentRepo.SaveChangesAsync();
 
-        return DepartmentDto.CreateInstance(department);
+        return _mapper.Map<DepartmentDto>(department);
     }
 
     public async Task UpdateAsync(int id, UpdateDepartmentRequest request)
@@ -132,15 +131,12 @@ public class DepartmentService : IDepartmentService
         await _departmentRepo.SaveChangesAsync();
     }
 
-    public async Task<ProjectDto?> GetParentAsync(int id)
+    public async Task<ProjectDto> GetParentAsync(int id)
     {
         await GetRequiredDepartmentAsync(id);
 
         var project = await _departmentRepo.GetParentOfNodeAsync(id);
-
-        return project is null
-            ? null
-            : ProjectDto.CreateInstance(project);
+        return project is null ? throw new MissingParentException() : _mapper.Map<ProjectDto>(project);
     }
 
     private async Task<Department> GetRequiredDepartmentAsync(int id)

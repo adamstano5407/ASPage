@@ -3,6 +3,7 @@ using APIKros.Exceptions;
 using APIKros.Models;
 using APIKros.Repositories;
 using APIKros.Requests.Employee;
+using AutoMapper;
 using FluentValidation;
 
 namespace APIKros.Services;
@@ -24,26 +25,29 @@ public class EmployeeService : IEmployeeService
     private readonly IValidator<CreateEmployeeRequest> _createEmployeeVal;
     private readonly IValidator<UpdateEmployeeRequest> _updateEmployeeVal;
     private readonly IValidator<ChangeCompanyRequest> _changeCompanyVal;
+    
+    private readonly IMapper _mapper;
 
-    public EmployeeService(IEmployeeRepository employeeRepository, IValidator<CreateEmployeeRequest> createEmployeeVal,  IValidator<UpdateEmployeeRequest> updateEmployeeVal, IValidator<ChangeCompanyRequest> changeCompanyVal, ICompanyRepository companyRepository)
+    public EmployeeService(IEmployeeRepository employeeRepository, IValidator<CreateEmployeeRequest> createEmployeeVal,  IValidator<UpdateEmployeeRequest> updateEmployeeVal, IValidator<ChangeCompanyRequest> changeCompanyVal, ICompanyRepository companyRepository, IMapper mapper)
     {
         _employeeRepository = employeeRepository;
         _createEmployeeVal = createEmployeeVal;
         _updateEmployeeVal = updateEmployeeVal;
         _changeCompanyVal = changeCompanyVal;
         _companyRepository = companyRepository;
+        _mapper = mapper;
     }
     
     public async Task<EmployeeDto?> GetAsync(int id)
     {
         var employee = await _employeeRepository.GetByIdAsync(id);
-        return employee == null ? throw new NotFoundException() : EmployeeDto.CreateInstance(employee);
+        return employee == null ? throw new NotFoundException() : _mapper.Map<EmployeeDto>(employee);
     }
 
     public async Task<IEnumerable<EmployeeDto>> GetAllAsync()
     {
         var employees = await _employeeRepository.GetAllAsync();
-        return employees.Select(employee => EmployeeDto.CreateInstance(employee)).ToList();
+        return _mapper.Map<IReadOnlyList<EmployeeDto>>(employees);
     }
 
     public async Task<EmployeeDto> CreateAsync(CreateEmployeeRequest request)
@@ -63,7 +67,7 @@ public class EmployeeService : IEmployeeService
 
         await _employeeRepository.CreateAsync(employee);
         await _employeeRepository.SaveChangesAsync();
-        return EmployeeDto.CreateInstance(employee);
+        return _mapper.Map<EmployeeDto>(employee);
     }
 
     public async Task UpdateAsync(int id, UpdateEmployeeRequest request)
@@ -125,6 +129,6 @@ public class EmployeeService : IEmployeeService
             throw new NotFoundException();
         }
         var company = await _companyRepository.GetByIdAsync(employee.CompanyId);
-        return company == null ? throw new NotFoundException() : CompanyDto.CreateInstance(company);
+        return _mapper.Map<CompanyDto>(company);
     }
 }

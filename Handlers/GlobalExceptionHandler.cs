@@ -33,14 +33,19 @@ public class GlobalExceptionHandler : IExceptionHandler
 
             case NotFoundException:
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
+                break;
 
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    type = "not_found",
-                    message = exception.Message
-                }, cancellationToken);
+            case MissingParentException:
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                break;
 
-                return true;
+            case DataIntegrityException:
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                break;
+
+            case RuntimeException:
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                break;
 
             default:
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
@@ -53,5 +58,13 @@ public class GlobalExceptionHandler : IExceptionHandler
 
                 return true;
         }
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            type = exception.GetType().Name,
+            message = exception.Message
+        }, cancellationToken);
+
+        return true;
     }
 }
