@@ -1,5 +1,3 @@
-using APIKros.DTOs.Employee;
-
 namespace APIKros.DTOs;
 
 public abstract class HierarchyNodeDto

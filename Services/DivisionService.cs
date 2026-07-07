@@ -1,6 +1,4 @@
-using APIKros.DTOs.Company;
-using APIKros.DTOs.Division;
-using APIKros.DTOs.Project;
+using APIKros.DTOs;
 using APIKros.Exceptions;
 using APIKros.Models;
 using APIKros.Repositories;

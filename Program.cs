@@ -41,7 +41,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-app.MapRoutes();
 // CORS can be configured later when a frontend application is added.
 
 if (app.Environment.IsDevelopment())
@@ -62,16 +61,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+//app.UseAuthorization();
 
-var controllers = app.MapControllers();
+app.MapRoutes();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseRateLimiter();
-    controllers.RequireRateLimiting("default");
-}
-    
 app.Run();
 
 

@@ -7,7 +7,7 @@ public static class DepartmentEndpoints
 {
     public static IEndpointRouteBuilder MapDepartmentEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/departments")
+        var group = app.MapGroup("/departments")
             .WithTags("Departments");
 
         group.MapGet("/", async (IDepartmentService service) =>

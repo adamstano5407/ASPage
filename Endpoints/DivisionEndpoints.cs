@@ -7,7 +7,7 @@ public static class DivisionEndpoints
 {
     public static IEndpointRouteBuilder MapDivisionEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/divisions")
+        var group = app.MapGroup("/divisions")
             .WithTags("Divisions");
 
         group.MapGet("/", async (IDivisionService service) =>

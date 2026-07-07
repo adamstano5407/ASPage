@@ -1,6 +1,4 @@
-using APIKros.DTOs.Employee;
-
-namespace APIKros.DTOs.Division
+namespace APIKros.DTOs
 {
     public class DivisionDto : HierarchyNodeDto,IDto<Models.Division, DivisionDto>
     {

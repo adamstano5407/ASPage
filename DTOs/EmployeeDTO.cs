@@ -1,4 +1,4 @@
-namespace APIKros.DTOs.Employee;
+namespace APIKros.DTOs;
 
 public class EmployeeDto : IDto<Models.Employee, EmployeeDto>
 {

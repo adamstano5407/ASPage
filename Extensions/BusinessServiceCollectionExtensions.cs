@@ -10,8 +10,8 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<ICompanyService, CompanyService>();
         services.AddScoped<IDivisionService, DivisionService>();
         services.AddScoped<IProjectService, ProjectService>();
-        services.AddScoped<IDepartmentRepository, DepartmentRepository>();
-        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IDepartmentService, DepartmentService >();
+        services.AddScoped<IEmployeeService, EmployeeService>();
         return services;
     }
 }

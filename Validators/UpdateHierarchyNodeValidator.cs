@@ -41,3 +41,39 @@ public abstract class UpdateHierarchyNodeValidator<TRequest, TModel>
             .When(x => x.ManagerId.HasValue);
     }
 }
+
+public class UpdateCompanyRequestValidator
+    : UpdateHierarchyNodeValidator<UpdateCompanyRequest, Company>
+{
+    public UpdateCompanyRequestValidator(AppDbContext context)
+        : base(context)
+    {
+    }
+}
+
+public class UpdateDivisionRequestValidator
+    : UpdateHierarchyNodeValidator<UpdateDivisionRequest, Division>
+{
+    public UpdateDivisionRequestValidator(AppDbContext context)
+        : base(context)
+    {
+    }
+}
+
+public class UpdateProjectRequestValidator
+    : UpdateHierarchyNodeValidator<UpdateProjectRequest, Project>
+{
+    public UpdateProjectRequestValidator(AppDbContext context)
+        : base(context)
+    {
+    }
+}
+
+public class UpdateDepartmentRequestValidator
+    : UpdateHierarchyNodeValidator<UpdateDepartmentRequest, Department>
+{
+    public UpdateDepartmentRequestValidator(AppDbContext context)
+        : base(context)
+    {
+    }
+}

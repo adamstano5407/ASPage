@@ -1,6 +1,4 @@
-using APIKros.DTOs.Employee;
-
-namespace APIKros.DTOs.Company
+namespace APIKros.DTOs
 {
     public class CompanyDto : HierarchyNodeDto, IDto<Models.Company, CompanyDto>
     {

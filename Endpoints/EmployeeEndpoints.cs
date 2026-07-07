@@ -7,7 +7,7 @@ public static class EmployeeEndpoints
 {
     public static IEndpointRouteBuilder MapEmployeeEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/employees")
+        var group = app.MapGroup("/employees")
             .WithTags("Employees");
 
         group.MapGet("/", async (IEmployeeService service) =>
