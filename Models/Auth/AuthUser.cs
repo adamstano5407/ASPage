@@ -8,4 +8,5 @@ public class AuthUser : IModel<int>
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpires { get; set; }
     public ICollection<UserRole> UserRoles { get; set; } = [];
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
 }

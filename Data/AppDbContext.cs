@@ -15,6 +15,10 @@ namespace APIKros.Data
         public DbSet<AuthUser> AuthUsers => Set<AuthUser>();
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<UserRole> UserRoles => Set<UserRole>();
+        
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+        
+        
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }

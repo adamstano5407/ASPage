@@ -35,5 +35,35 @@ public static class AuthDbConfiguration
                 .HasForeignKey(e => e.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+        
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.Property(e => e.TokenHash)
+                .IsRequired();
+
+            entity.Property(e => e.CreatedAt)
+                .IsRequired();
+
+            entity.Property(e => e.ExpiresAt)
+                .IsRequired();
+
+            entity.Property(e => e.CreatedByIp)
+                .HasMaxLength(45);
+
+            entity.Property(e => e.RevokedByIp)
+                .HasMaxLength(45);
+
+            entity.Property(e => e.ReplacedByTokenHash);
+
+            entity.HasIndex(e => e.TokenHash)
+                .IsUnique();
+
+            entity.HasIndex(e => e.UserId);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.RefreshTokens)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }
