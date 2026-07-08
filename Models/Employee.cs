@@ -6,7 +6,7 @@ namespace APIKros.Models
 {
 
 
-    public class Employee : IModel
+    public class Employee : IModel<int>
     {
         [Key]
         public int Id { get; set; }

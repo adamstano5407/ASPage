@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace APIKros.Repositories;
 
-public class Repository<T, TK> : IRepository<T, TK> where T : class, IModel where TK : IEquatable<TK>, IComparable<TK>
+public class Repository<T, TK> : IRepository<T, TK>
+    where T : class, IModel<TK>
+    where TK : IEquatable<TK>, IComparable<TK>
 {
     protected readonly AppDbContext DbContext;
 
@@ -13,33 +15,36 @@ public class Repository<T, TK> : IRepository<T, TK> where T : class, IModel wher
         DbContext = db;
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync()
+    public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await DbContext.Set<T>().ToListAsync();
-
+        return await DbContext.Set<T>()
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<T?> GetByIdAsync(TK id)
+    public async Task<T?> GetByIdAsync(TK id, CancellationToken cancellationToken = default)
     {
-        return await DbContext.Set<T>().FindAsync(id);
+        return await DbContext.Set<T>()
+            .FindAsync([id], cancellationToken);
     }
 
-    public async Task<T> CreateAsync(T entity)
+    public async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)
     {
-        _ = await DbContext.Set<T>().AddAsync(entity);
+        await DbContext.Set<T>()
+            .AddAsync(entity, cancellationToken);
 
         return entity;
     }
 
-
-    public async Task UpdateAsync(T entity)
+    public Task UpdateAsync(T entity, CancellationToken cancellationToken = default)
     {
         DbContext.Set<T>().Update(entity);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(TK id)
+    public async Task DeleteAsync(TK id, CancellationToken cancellationToken = default)
     {
-        var entity = await DbContext.Set<T>().FindAsync(id);
+        var entity = await DbContext.Set<T>()
+            .FindAsync([id], cancellationToken);
 
         if (entity == null)
             return;
@@ -47,14 +52,14 @@ public class Repository<T, TK> : IRepository<T, TK> where T : class, IModel wher
         DbContext.Set<T>().Remove(entity);
     }
 
-    public async Task<bool> ExistsAsync(TK id)
+    public async Task<bool> ExistsAsync(TK id, CancellationToken cancellationToken = default)
     {
-        return await DbContext.Companies.AnyAsync(c => c.Id.Equals(id));
+        return await DbContext.Set<T>()
+            .AnyAsync(e => e.Id.Equals(id), cancellationToken);
     }
 
-    public async Task<bool> SaveChangesAsync()
+    public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        await DbContext.SaveChangesAsync();
-        return true;
+        return await DbContext.SaveChangesAsync(cancellationToken) > 0;
     }
 }

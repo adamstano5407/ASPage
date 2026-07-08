@@ -18,4 +18,5 @@ public class CompanyRepository : HierarchyNodeRepository<Company, int>, ICompany
     {
         return await DbContext.Companies.Where(c => c.Id == id).SelectMany(c => c.Divisions).ToListAsync();
     }
+    
 }

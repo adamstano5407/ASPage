@@ -1,37 +1,30 @@
-using APIKros.Data;
 using APIKros.Models;
+using APIKros.Repositories;
 using APIKros.Requests;
 using FluentValidation;
 
 namespace APIKros.Validators;
 
-public abstract class CreateNonRootHierarchyNodeValidator<TRequest, TModel, TParent>
-    : CreateHierarchyNodeValidator<TRequest, TModel>
+public abstract class CreateNonRootHierarchyNodeValidator<TRequest, TModel, TRepository>
+    : CreateHierarchyNodeValidator<TRequest, TModel, int, TRepository>
     where TRequest : CreateNonRootHierarchyNodeRequest
-    where TModel : HierarchyNode
-    where TParent : class
+    where TModel : HierarchyNode, IModel<int>
+    where TRepository : IHierarchyNodeRepository<TModel, int>
 {
     protected CreateNonRootHierarchyNodeValidator(
-        AppDbContext context,
-        string parentPropertyName)
-        : base(context)
+        IEmployeeRepository employeeRepository,
+        TRepository repository,
+        string modelName)
+        : base(employeeRepository, repository, modelName)
     {
         RuleFor(x => x.ParentId)
-            .GreaterThan(0).WithMessage("ParentId is required.")
-            .MustAsync((parentId, ct) =>
-                ValidationUtils.EntityExists<TParent>(context, parentId, ct))
-            .WithMessage($"{typeof(TParent).Name} does not exist.");
+            .GreaterThan(0)
+            .WithMessage("ParentId is required.");
 
         RuleFor(x => x.Code)
-            .MustAsync((request, code, ct) =>
-                ValidationUtils.IsUniqueForParent<TModel>(
-                    context,
-                    parentPropertyName,
-                    request.ParentId,
-                    "Code",
-                    code!,
-                    ct))
-            .WithMessage($"{typeof(TModel).Name} with this Code already exists in parent.");
+            .MustAsync(async (request, code, ct) =>
+                !await repository.CodeExistsWithinParentAsync(request.ParentId, code!, cancellationToken:ct))
+            .WithMessage($"{modelName} with this Code already exists in parent.");
     }
 }
 
@@ -39,22 +32,26 @@ public abstract class CreateNonRootHierarchyNodeValidator<TRequest, TModel, TPar
 public class CreateDivisionRequestValidator
     : CreateNonRootHierarchyNodeValidator<
         CreateDivisionRequest,
-        Models.Division,
-        Models.Company>
+        Division,
+        IDivisionRepository>
 {
-    public CreateDivisionRequestValidator(AppDbContext context)
-        : base(context, "CompanyId")
+    public CreateDivisionRequestValidator(
+        IEmployeeRepository employeeRepository,
+        IDivisionRepository divisionRepository)
+        : base(employeeRepository, divisionRepository, "Division")
     {
     }
 }
 public class CreateProjectRequestValidator
     : CreateNonRootHierarchyNodeValidator<
         CreateProjectRequest,
-        Models.Project,
-        Models.Division>
+        Project,
+        IProjectRepository>
 {
-    public CreateProjectRequestValidator(AppDbContext context)
-        : base(context, "DivisionId")
+    public CreateProjectRequestValidator(
+        IEmployeeRepository employeeRepository,
+        IProjectRepository projectRepository)
+        : base(employeeRepository, projectRepository, "Project")
     {
     }
 }
@@ -62,11 +59,13 @@ public class CreateProjectRequestValidator
 public class CreateDepartmentRequestValidator
     : CreateNonRootHierarchyNodeValidator<
         CreateDepartmentRequest,
-        Models.Department,
-        Models.Project>
+        Department,
+        IDepartmentRepository>
 {
-    public CreateDepartmentRequestValidator(AppDbContext context)
-        : base(context, "ProjectId")
+    public CreateDepartmentRequestValidator(
+        IEmployeeRepository employeeRepository,
+        IDepartmentRepository departmentRepository)
+        : base(employeeRepository, departmentRepository, "Department")
     {
     }
 }

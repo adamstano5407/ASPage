@@ -1,27 +1,25 @@
-using APIKros.Data;
+using APIKros.Repositories;
 using APIKros.Requests.Employee;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 
 namespace APIKros.Validators;
 
 public class CreateEmployeeRequestValidator : AbstractValidator<CreateEmployeeRequest>
 {
-    private readonly AppDbContext _context;
-
-    public CreateEmployeeRequestValidator(AppDbContext context)
+    public CreateEmployeeRequestValidator(
+        IEmployeeRepository employeeRepository,
+        ICompanyRepository companyRepository)
     {
-        _context = context;
         RuleFor(x => x.EmployeeNumber)
             .NotEmpty()
             .WithMessage("EmployeeNumber is required.")
             .MustAsync(async (request, employeeNumber, cancellation) =>
-                !await _context.Employees.AnyAsync(
-                    e => e.CompanyId == request.CompanyId &&
-                         e.EmployeeNumber == employeeNumber,
+                !await employeeRepository.EmployeeNumberExistsInCompanyAsync(
+                    request.CompanyId,
+                    employeeNumber,
                     cancellation))
             .WithMessage("Employee number already exists in this company.");
-        
+
         RuleFor(x => x.Title)
             .MaximumLength(80)
             .Must(ValidationUtils.IsAllowedTitle)
@@ -44,9 +42,9 @@ public class CreateEmployeeRequestValidator : AbstractValidator<CreateEmployeeRe
             .NotEmpty()
             .EmailAddress()
             .MustAsync(async (request, email, cancellation) =>
-                !await _context.Employees.AnyAsync(
-                    e => e.CompanyId == request.CompanyId &&
-                         e.Email == email,
+                !await employeeRepository.EmailExistsInCompanyAsync(
+                    request.CompanyId,
+                    email,
                     cancellation))
             .WithMessage("Employee with this Email already exists in this company.");
 
@@ -59,8 +57,7 @@ public class CreateEmployeeRequestValidator : AbstractValidator<CreateEmployeeRe
         RuleFor(x => x.CompanyId)
             .NotNull().WithMessage("Company id is required.")
             .GreaterThan(0).WithMessage("Company id must be greater than 0.")
-            .MustAsync((companyId, cancellationToken) =>
-                ValidationUtils.EntityExists<Models.Company>(_context, companyId, cancellationToken))
+            .MustAsync(companyRepository.ExistsAsync)
             .WithMessage("Company does not exist.");
     }
 }

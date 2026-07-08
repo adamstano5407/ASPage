@@ -1,24 +1,23 @@
 using APIKros.Data;
 using APIKros.Models;
+using APIKros.Repositories;
 using APIKros.Requests;
 using FluentValidation;
 
 namespace APIKros.Validators;
 
-public abstract class UpdateHierarchyNodeValidator<TRequest, TModel>
+public abstract class UpdateHierarchyNodeValidator<TRequest, TModel, TRepository>
     : AbstractValidator<TRequest>
     where TRequest : UpdateHierarchyNodeRequest
-    where TModel : HierarchyNode
+    where TModel : HierarchyNode, IModel<int>
+    where TRepository : IHierarchyNodeRepository<TModel, int>
 {
-    protected readonly AppDbContext Context;
-
-    protected UpdateHierarchyNodeValidator(AppDbContext context)
+    protected UpdateHierarchyNodeValidator(
+        TRepository repository,
+        IEmployeeRepository employeeRepository)
     {
-        Context = context;
-
         RuleFor(x => x.Id)
-            .MustAsync((id, ct) =>
-                ValidationUtils.EntityExists<TModel>(Context, id, ct))
+            .MustAsync(repository.ExistsAsync)
             .WithMessage($"{typeof(TModel).Name} does not exist.");
 
         RuleFor(x => x.Name)
@@ -29,51 +28,63 @@ public abstract class UpdateHierarchyNodeValidator<TRequest, TModel>
         RuleFor(x => x.Code)
             .NotEmpty()
             .MaximumLength(50)
+            .MustAsync(async (request, code, ct) =>
+                !await repository.CodeExistsAsync(code!, request.Id, ct))
+            .WithMessage($"{typeof(TModel).Name} with this Code already exists.")
             .When(x => x.Code is not null);
-
+        
         RuleFor(x => x.ManagerId)
             .MustAsync((managerId, ct) =>
-                ValidationUtils.EntityExists<Models.Employee>(
-                    Context,
-                    managerId!.Value,
-                    ct))
+                employeeRepository.ExistsAsync(managerId!.Value, ct))
             .WithMessage("Manager does not exist.")
-            .When(x => x.ManagerId.HasValue);
+            .When(x => x.ManagerId.HasValue
+            );
     }
+
 }
+
 
 public class UpdateCompanyRequestValidator
-    : UpdateHierarchyNodeValidator<UpdateCompanyRequest, Company>
-{
-    public UpdateCompanyRequestValidator(AppDbContext context)
-        : base(context)
+        : UpdateHierarchyNodeValidator<UpdateCompanyRequest, Company, ICompanyRepository>
     {
+        public UpdateCompanyRequestValidator(
+            ICompanyRepository companyRepository,
+            IEmployeeRepository employeeRepository)
+            : base(companyRepository, employeeRepository)
+        {
+        }
     }
-}
+
 
 public class UpdateDivisionRequestValidator
-    : UpdateHierarchyNodeValidator<UpdateDivisionRequest, Division>
+    : UpdateHierarchyNodeValidator<UpdateDivisionRequest, Division, IDivisionRepository>
 {
-    public UpdateDivisionRequestValidator(AppDbContext context)
-        : base(context)
+    public UpdateDivisionRequestValidator(
+        IDivisionRepository divisionRepository,
+        IEmployeeRepository employeeRepository)
+        : base(divisionRepository, employeeRepository)
     {
     }
 }
 
 public class UpdateProjectRequestValidator
-    : UpdateHierarchyNodeValidator<UpdateProjectRequest, Project>
+    : UpdateHierarchyNodeValidator<UpdateProjectRequest, Project, IProjectRepository>
 {
-    public UpdateProjectRequestValidator(AppDbContext context)
-        : base(context)
+    public UpdateProjectRequestValidator(
+        IProjectRepository projectRepository,
+        IEmployeeRepository employeeRepository)
+        : base(projectRepository, employeeRepository)
     {
     }
 }
 
 public class UpdateDepartmentRequestValidator
-    : UpdateHierarchyNodeValidator<UpdateDepartmentRequest, Department>
+    : UpdateHierarchyNodeValidator<UpdateDepartmentRequest, Department, IDepartmentRepository>
 {
-    public UpdateDepartmentRequestValidator(AppDbContext context)
-        : base(context)
+    public UpdateDepartmentRequestValidator(
+        IDepartmentRepository departmentRepository,
+        IEmployeeRepository employeeRepository)
+        : base(departmentRepository, employeeRepository)
     {
     }
 }
