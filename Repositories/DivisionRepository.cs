@@ -7,6 +7,7 @@ namespace APIKros.Repositories;
 
 public class DivisionRepository : HierarchyNodeRepository<Division, int>, IDivisionRepository
 {
+    protected override string? ParentPropertyName => nameof(Division.CompanyId);
     public DivisionRepository(AppDbContext db) : base(db)
     {
     }

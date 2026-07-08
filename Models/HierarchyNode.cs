@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace APIKros.Models;
 
-public abstract class HierarchyNode : IModel
+public abstract class HierarchyNode : IModel<int>
 {
     public int Id { get; set; }
     [Required]

@@ -1,4 +1,5 @@
 using APIKros.Data;
+using APIKros.Repositories;
 using APIKros.Requests.Employee;
 using FluentValidation;
 
@@ -6,18 +7,11 @@ namespace APIKros.Validators;
 
 public class UpdateEmployeeRequestValidator : AbstractValidator<UpdateEmployeeRequest>
 {
-    private readonly AppDbContext _context;
-
-    public UpdateEmployeeRequestValidator(AppDbContext context)
+    
+    public UpdateEmployeeRequestValidator(IEmployeeRepository employeeRepository, ICompanyRepository companyRepository)
     {
-        _context = context;
 
-        RuleFor(x => x.Id).MustAsync((id, cancellation) =>
-            ValidationUtils.EntityExists<Models.Employee>(
-                _context,
-                id,
-                cancellation
-            )).WithMessage("Employee does not exist.");
+        RuleFor(x => x.Id).MustAsync(employeeRepository.ExistsAsync).WithMessage("Employee does not exist.");
         
         RuleFor(x => x.FirstName)
             .NotEmpty()
@@ -37,12 +31,8 @@ public class UpdateEmployeeRequestValidator : AbstractValidator<UpdateEmployeeRe
             .When(x => !string.IsNullOrWhiteSpace(x.Email));
 
         RuleFor(x => x.CompanyId)
-            .MustAsync((companyId, cancellation) =>
-                ValidationUtils.EntityExists<Models.Company>(
-                    _context,
-                    companyId!.Value,
-                    cancellation))
-            .WithMessage("Company does not exist.")
-            .When(x => x.CompanyId.HasValue);
+            .MustAsync(async (companyId, ct) =>
+                !companyId.HasValue || await companyRepository.ExistsAsync(companyId.Value, ct))
+            .WithMessage("Company does not exist.");
     }
 }

@@ -7,6 +7,7 @@ namespace APIKros.Repositories;
 
 public class DepartmentRepository : HierarchyNodeRepository<Department, int>, IDepartmentRepository
 {
+    protected override string? ParentPropertyName => nameof(Department.ProjectId);
     public DepartmentRepository(AppDbContext db) : base(db)
     {
     }

@@ -1,6 +1,6 @@
 namespace APIKros.Models.Auth;
 
-public class AuthUser : IModel
+public class AuthUser : IModel<int>
 {
     public int Id { get; set; }
     public string Email { get; set; }

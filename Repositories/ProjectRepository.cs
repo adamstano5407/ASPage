@@ -8,6 +8,7 @@ namespace APIKros.Repositories;
 
 public class ProjectRepository : HierarchyNodeRepository<Project, int>, IProjectRepository
 {
+    protected override string? ParentPropertyName => nameof(Project.DivisionId);
     public ProjectRepository(AppDbContext db) : base(db)
     {
     }
