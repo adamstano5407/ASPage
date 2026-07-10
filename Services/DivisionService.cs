@@ -61,12 +61,11 @@ public class DivisionService : IDivisionService
         if (company is null)
             throw new NotFoundException();
 
-        var division = new Division
-        {
-            Name = request.Name,
-            Code = request.Code,
-            CompanyId = request.ParentId,
-        };
+        var division = new Division(
+           request.Name,
+           request.Code,
+           companyId : request.ParentId
+        );
 
         await _divisionRepo.CreateAsync(division);
 
@@ -83,13 +82,13 @@ public class DivisionService : IDivisionService
             throw new NotFoundException();
 
         if (request.Name is not null)
-            division.Name = request.Name;
+            division.ChangeName(request.Name);
 
         if (request.Code is not null)
-            division.Code = request.Code;
+            division.ChangeCode(request.Code);
 
         if (request.ManagerId.HasValue)
-            division.ManagerId = request.ManagerId.Value;
+            division.AssignManager(request.ManagerId.Value);
 
         await _divisionRepo.UpdateAsync(division);
         await _divisionRepo.SaveChangesAsync();
@@ -113,7 +112,7 @@ public class DivisionService : IDivisionService
         if (division is null)
             throw new NotFoundException();
 
-        division.ManagerId = null;
+        division.AssignManager(null);
 
         await _divisionRepo.UpdateAsync(division);
         await _divisionRepo.SaveChangesAsync();
@@ -133,7 +132,7 @@ public class DivisionService : IDivisionService
         if (employee is null)
             throw new NotFoundException();
 
-        division.ManagerId = request.EmployeeId;
+        division.AssignManager(request.EmployeeId); 
 
         await _divisionRepo.UpdateAsync(division);
         await _divisionRepo.SaveChangesAsync();

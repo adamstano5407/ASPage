@@ -65,11 +65,11 @@ public class DepartmentService : IDepartmentService
             throw new NotFoundException();
 
         var department = new Department
-        {
-            Name = request.Name,
-            Code = request.Code,
-            ProjectId = request.ParentId
-        };
+       (
+            request.Name,
+            request.Code,
+            projectId: request.ParentId
+       );
 
         await _departmentRepo.CreateAsync(department);
         await _departmentRepo.SaveChangesAsync();
@@ -84,13 +84,13 @@ public class DepartmentService : IDepartmentService
         var department = await GetRequiredDepartmentAsync(id);
 
         if (request.Name is not null)
-            department.Name = request.Name;
+            department.ChangeName(request.Name);
 
         if (request.Code is not null)
-            department.Code = request.Code;
+            department.ChangeCode(request.Code);
 
         if (request.ManagerId.HasValue)
-            department.ManagerId = request.ManagerId.Value;
+            department.AssignManager(request.ManagerId.Value);
 
         await _departmentRepo.UpdateAsync(department);
         await _departmentRepo.SaveChangesAsync();
@@ -108,7 +108,7 @@ public class DepartmentService : IDepartmentService
     {
         var department = await GetRequiredDepartmentAsync(id);
 
-        department.ManagerId = null;
+        department.AssignManager(null);
 
         await _departmentRepo.UpdateAsync(department);
         await _departmentRepo.SaveChangesAsync();
@@ -125,7 +125,7 @@ public class DepartmentService : IDepartmentService
         if (employee is null)
             throw new NotFoundException();
 
-        department.ManagerId = request.EmployeeId;
+        department.AssignManager(request.EmployeeId);
 
         await _departmentRepo.UpdateAsync(department);
         await _departmentRepo.SaveChangesAsync();

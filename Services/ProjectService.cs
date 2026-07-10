@@ -10,8 +10,8 @@ namespace APIKros.Services;
 
 public interface IProjectService
     : IHierarchyNodeService<ProjectDto, CreateProjectRequest, UpdateProjectRequest, int>,
-      IHasParentService<DivisionDto, int>,
-      IHasChildrenService<DepartmentDto, int>
+        IHasParentService<DivisionDto, int>,
+        IHasChildrenService<DepartmentDto, int>
 {
 }
 
@@ -22,7 +22,8 @@ public class ProjectService : IProjectService
     private readonly IValidator<CreateProjectRequest> _createValidator;
     private readonly IValidator<UpdateProjectRequest> _updateValidator;
     private readonly IValidator<AssignManagerRequest> _assignManagerValidator;
-    private readonly  IMapper _mapper;
+    private readonly IMapper _mapper;
+
     public ProjectService(
         IProjectRepository projectRepo,
         IEmployeeRepository employeeRepo,
@@ -55,12 +56,9 @@ public class ProjectService : IProjectService
     {
         await _createValidator.ValidateAndThrowAsync(request);
 
-        var project = new Project
-        {
-            Name = request.Name,
-            Code = request.Code,
-            DivisionId = request.ParentId
-        };
+        var project = new Project(
+            name: request.Name, code: request.Code,
+            divisionId: request.ParentId);
 
         await _projectRepo.CreateAsync(project);
         await _projectRepo.SaveChangesAsync();
@@ -75,13 +73,13 @@ public class ProjectService : IProjectService
         var project = await GetRequiredProjectAsync(id);
 
         if (request.Name is not null)
-            project.Name = request.Name;
+            project.ChangeName(request.Name);
 
         if (request.Code is not null)
-            project.Code = request.Code;
+            project.ChangeCode(request.Code);
 
         if (request.ManagerId.HasValue)
-            project.ManagerId = request.ManagerId.Value;
+            project.AssignManager(request.ManagerId);
 
         await _projectRepo.UpdateAsync(project);
         await _projectRepo.SaveChangesAsync();
@@ -99,7 +97,7 @@ public class ProjectService : IProjectService
     {
         var project = await GetRequiredProjectAsync(id);
 
-        project.ManagerId = null;
+        project.AssignManager(null);
 
         await _projectRepo.UpdateAsync(project);
         await _projectRepo.SaveChangesAsync();
@@ -116,7 +114,7 @@ public class ProjectService : IProjectService
         if (employee is null)
             throw new NotFoundException();
 
-        project.ManagerId = request.EmployeeId;
+        project.AssignManager(request.EmployeeId);
 
         await _projectRepo.UpdateAsync(project);
         await _projectRepo.SaveChangesAsync();

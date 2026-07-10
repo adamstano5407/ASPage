@@ -54,16 +54,15 @@ public class EmployeeService : IEmployeeService
     {
         await _createEmployeeVal.ValidateAndThrowAsync(request);
 
-        var employee = new Employee
-        {
-            Title = request.Title,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Email = request.Email,
-            Phone = request.Phone,
-            CompanyId = request.CompanyId,
-            EmployeeNumber = request.EmployeeNumber
-        };
+        var employee = new Employee(
+            title: request.Title,
+            firstName: request.FirstName,
+            lastName: request.LastName,
+            email: request.Email,
+            phone: request.Phone,
+            companyId : request.CompanyId,
+            employeeNumber: request.EmployeeNumber
+        );
 
         await _employeeRepository.CreateAsync(employee);
         await _employeeRepository.SaveChangesAsync();
@@ -79,17 +78,28 @@ public class EmployeeService : IEmployeeService
 
         await _updateEmployeeVal.ValidateAndThrowAsync(request);
 
-        employee.Title = request.Title ?? employee.Title;
-        employee.FirstName = request.FirstName ?? employee.FirstName;
-        employee.LastName = request.LastName ?? employee.LastName;
-        employee.Email = request.Email ?? employee.Email;
-        employee.Phone = request.Phone ?? employee.Phone;
-        employee.EmployeeNumber = request.EmployeeNumber ?? employee.EmployeeNumber;
+        if (request.Title is not null)
+            employee.ChangeTitle(request.Title);
+
+        if (request.FirstName is not null)
+            employee.ChangeFirstName(request.FirstName);
+
+        if (request.LastName is not null)
+            employee.ChangeLastName(request.LastName);
+
+        if (request.Email is not null)
+            employee.ChangeEmail(request.Email);
+
+        if (request.Phone is not null)
+            employee.ChangePhone(request.Phone);
+
+        if (request.EmployeeNumber is not null)
+            employee.ChangeEmployeeNumber(request.EmployeeNumber);
 
         if (request.CompanyId.HasValue && request.CompanyId.Value != employee.CompanyId)
         {
             await _employeeRepository.UnassignEmployeeFromLeadershipPositionsAsync(employee.Id);
-            employee.CompanyId = request.CompanyId.Value;
+            employee.ChangeCompany(request.CompanyId.Value);
         }
 
         await _employeeRepository.UpdateAsync(employee);

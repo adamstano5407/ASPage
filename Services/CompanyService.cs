@@ -56,16 +56,14 @@ public class CompanyService : ICompanyService
     {
         await _createValidator.ValidateAndThrowAsync(request);
         
-        var company = new Company
-        {
-            Name = request.Name,
-            Code = request.Code,
-            ManagerId = request.ManagerId
-        };
+        var company = new Company(
+            request.Name,
+            request.Code,
+            request.ManagerId);
        
         if (request.ManagerId.HasValue)
         {
-            company.ManagerId = request.ManagerId.Value;
+            company.AssignManager(request.ManagerId.Value);
         }
         
         await _repo.CreateAsync(company);
@@ -86,17 +84,17 @@ public class CompanyService : ICompanyService
         
         if (request.ManagerId.HasValue)
         {
-            company.ManagerId = request.ManagerId.Value;
+            company.AssignManager(request.ManagerId.Value);
         }
 
         if (request.Name is not null)
         {
-            company.Name = request.Name;
+            company.ChangeName(request.Name);
         }
 
         if (request.Code is not null)
         {
-            company.Code = request.Code;
+            company.ChangeCode(request.Code);
         }
 
         await _repo.UpdateAsync(company);
@@ -130,7 +128,7 @@ public class CompanyService : ICompanyService
         await _assignManagerValidator.ValidateAndThrowAsync(request);
         var company = await _repo.GetByIdAsync(id) ?? throw  new NotFoundException();
         
-        company.ManagerId = request.EmployeeId;
+        company.AssignManager(request.EmployeeId);
         await _repo.UpdateAsync(company);
         await _repo.SaveChangesAsync();
         

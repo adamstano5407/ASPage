@@ -4,12 +4,24 @@ using System.ComponentModel.DataAnnotations;
 
 namespace APIKros.Models
 {
-    public class Company : HierarchyNode
+    public class Company(string name, string code, int? managerId) : HierarchyNode(name, code, managerId)
     {
+        
+        private readonly List<Employee> _employees = new();
+        public IReadOnlyCollection<Employee> Employees => _employees;
 
-        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+        private readonly List<Division> _divisions = new();
+        public IReadOnlyCollection<Division> Divisions => _divisions;
 
-        public ICollection<Division> Divisions { get; set; } = new List<Division>();
+        public void AddEmployee(Employee employee)
+        {
+            _employees.Add(employee);
+        }
+
+        public void AddDivision(Division division)
+        {
+            _divisions.Add(division);
+        }
     }
 
 }
