@@ -12,10 +12,56 @@ on:
   workflow_dispatch:
 
 jobs:
-  automatic-tests:
+  build:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Docker
+          file: ./Dockerfile
+          load: true
+          tags: apikros-api:ci
+          build-args: |
+            UID=1000
+            GID=1000
+          cache-from: type=gha,scope=apikros-api
+          cache-to: type=gha,mode=max,scope=apikros-api
+
+      - name: Save Docker image
+        run: |
+          mkdir -p .artifacts
+          docker save apikros-api:ci \
+            --output .artifacts/apikros-api-ci.tar
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: apikros-api-ci
+          path: .artifacts/apikros-api-ci.tar
+          retention-days: 1
+          if-no-files-found: error
+
+  test:
     name: Run TeaPie tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    needs: build
+
+    env:
+      DB_NAME: APIKrosTest
+      DB_USER: sa
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_TRUST_CERTIFICATE: "true"
 
     steps:
       - name: Checkout repository
@@ -29,35 +75,92 @@ jobs:
       - name: Install TeaPie
         run: dotnet tool install --global TeaPie.Tool
 
-      - name: Add .NET tools to PATH
-        run: echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
-
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Build API image
-        uses: docker/build-push-action@v7
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
         with:
-          context: ./Docker
-          file: ./Docker/Dockerfile
-          load: true
-          tags: apikros-api:ci
-          build-args: |
-            UID=1000
-            GID=1000
-          cache-from: type=gha,scope=apikros-api
-          cache-to: type=gha,mode=max,scope=apikros-api
+          name: apikros-api-ci
+          path: .artifacts
 
-      - name: Start Docker services
+      - name: Load Docker image
+        run: |
+          docker load \
+            --input .artifacts/apikros-api-ci.tar
+
+          docker image inspect apikros-api:ci
+
+      - name: Start SQL Server
         run: |
           docker compose \
             -f ./Docker/docker-compose.ci.yml \
-            up --detach --no-build
+            up --detach sqlserver
+
+      - name: Wait for SQL Server
+        run: |
+          for attempt in {1..60}; do
+            container_id="$(
+              docker compose \
+                -f ./Docker/docker-compose.ci.yml \
+                ps -q sqlserver
+            )"
+
+            if [ -n "$container_id" ]; then
+              status="$(
+                docker inspect \
+                  --format='{{.State.Health.Status}}' \
+                  "$container_id"
+              )"
+
+              if [ "$status" = "healthy" ]; then
+                echo "SQL Server is ready."
+                exit 0
+              fi
+
+              echo "Waiting for SQL Server: ${attempt}/60, status=${status}"
+            else
+              echo "Waiting for SQL Server container: ${attempt}/60"
+            fi
+
+            sleep 2
+          done
+
+          echo "SQL Server did not become ready."
+
+          docker compose \
+            -f ./Docker/docker-compose.ci.yml \
+            ps --all
+
+          docker compose \
+            -f ./Docker/docker-compose.ci.yml \
+            logs sqlserver
+
+          exit 1
+
+      - name: Create and migrate database
+        run: |
+          docker compose \
+            -f ./Docker/docker-compose.ci.yml \
+            run \
+            --rm \
+            --no-deps \
+            --entrypoint dotnet \
+            api \
+            ef database update
+
+      - name: Start API
+        run: |
+          docker compose \
+            -f ./Docker/docker-compose.ci.yml \
+            up --detach --no-build api
 
       - name: Wait for API
         run: |
           for attempt in {1..60}; do
-            if curl --fail --silent http://localhost:8080/health > /dev/null; then
+            if curl \
+              --fail \
+              --silent \
+              http://localhost:8080/health \
+              > /dev/null
+            then
               echo "API is ready."
               exit 0
             fi
@@ -70,21 +173,14 @@ jobs:
 
           docker compose \
             -f ./Docker/docker-compose.ci.yml \
-            ps
+            ps --all
 
           docker compose \
             -f ./Docker/docker-compose.ci.yml \
             logs
 
           exit 1
-          
-      - name: Create database
-        run: |
-          docker compose \
-            -f ./Docker/docker-compose.ci.yml \
-            exec -T api \
-            dotnet ef database update
-      
+
       - name: Run TeaPie tests
         run: teapie test ./src/Tests
 
