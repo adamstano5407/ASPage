@@ -1,7 +1,10 @@
 // Department.csx
-public class Department
+
+#load ../IClone.csx
+
+public class Department : IClone<Department>
 {
-    public int Id { get; set; }
+    public int? Id { get; set; }
     public string Name { get; set; } = "";
     public string Code { get; set; } = "";
     public int ProjectId { get; set; }
@@ -9,4 +12,15 @@ public class Department
 
     public override string ToString() =>
         $"Id: {Id}, Name: {Name}, Code: {Code}, ProjectId: {ProjectId}, ManagerId: {ManagerId}";
+
+    public Department Clone()
+    {
+        return new Department
+        {
+            Name = Name,
+            Code = Code,
+            ProjectId = ProjectId,
+            ManagerId = ManagerId
+        };
+    }
 }

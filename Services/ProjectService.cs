@@ -39,10 +39,10 @@ public class ProjectService : IProjectService
         _mapper = mapper;
     }
 
-    public async Task<ProjectDto?> GetAsync(int id)
+    public async Task<ProjectDto> GetAsync(int id)
     {
         var project = await _projectRepo.GetByIdAsync(id);
-        return project == null ? throw new NotFoundException() : _mapper.Map<ProjectDto?>(project);
+        return project == null ? throw new NotFoundException() : _mapper.Map<ProjectDto>(project);
     }
 
     public async Task<IEnumerable<ProjectDto>> GetAllAsync()

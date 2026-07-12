@@ -47,6 +47,7 @@
     <Content Include=".teapie\Definitions\Employee\Employee.csx" />
     <Content Include=".teapie\Definitions\Employee\EmployeeFaker.csx" />
     <Content Include=".teapie\Definitions\Generator.csx" />
+    <Content Include=".teapie\Definitions\IClone.csx" />
     <Content Include=".teapie\Definitions\Project\Project.csx" />
     <Content Include=".teapie\Definitions\Project\ProjectFaker.csx" />
     <Content Include=".teapie\Definitions\ResponseClasses.csx" />

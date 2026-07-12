@@ -38,7 +38,7 @@ public class CompanyService : ICompanyService
         _mapper = mapper;
     }
     
-    public async Task<CompanyDto?> GetAsync(int id)
+    public async Task<CompanyDto> GetAsync(int id)
     {
         var company = await _repo.GetByIdAsync(id);
 

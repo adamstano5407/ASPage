@@ -39,10 +39,10 @@ public class DivisionService : IDivisionService
         _mapper = mapper;
     }
     
-    public async Task<DivisionDto?> GetAsync(int id)
+    public async Task<DivisionDto> GetAsync(int id)
     {
         var division = await _divisionRepo.GetByIdAsync(id);
-        return division is null ? throw new NotFoundException() : _mapper.Map<DivisionDto?>(division);
+        return division is null ? throw new NotFoundException() : _mapper.Map<DivisionDto>(division);
     }
 
     public async Task<IEnumerable<DivisionDto>> GetAllAsync()

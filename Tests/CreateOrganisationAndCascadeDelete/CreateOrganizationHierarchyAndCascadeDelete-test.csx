@@ -120,12 +120,27 @@ tp.Test("Created hierarchy should be retrievable.", () =>
 });
 
 
-tp.Test("Deleted company resources should not be retrievable.", () =>
+tp.Test("Deleted company should not be retrievable.", () =>
 {
     Equal(404, tp.Responses["GetDeletedCompanyRequest"].StatusCode());
-    Equal(404, tp.Responses["GetDeletedCompanyEmployeesRequest"].StatusCode());
+});
+
+tp.Test("Deleted employee should not be retrievable.", () =>
+{
     Equal(404, tp.Responses["GetDeletedEmployeeRequest"].StatusCode());
+});
+
+tp.Test("Deleted division should not be retrievable.", () =>
+{
     Equal(404, tp.Responses["GetDeletedDivisionRequest"].StatusCode());
+});
+
+tp.Test("Deleted project should not be retrievable.", () =>
+{
     Equal(404, tp.Responses["GetDeletedProjectRequest"].StatusCode());
+});
+
+tp.Test("Deleted department should not be retrievable.", () =>
+{
     Equal(404, tp.Responses["GetDeletedDepartmentRequest"].StatusCode());
 });

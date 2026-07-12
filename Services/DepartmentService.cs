@@ -41,11 +41,14 @@ public class DepartmentService : IDepartmentService
         _mapper = mapper;
     }
 
-    public async Task<DepartmentDto?> GetAsync(int id)
+    public async Task<DepartmentDto> GetAsync(int id)
     {
         var department = await _departmentRepo.GetByIdAsync(id);
-
-        return _mapper.Map<DepartmentDto?>(department);
+        if (department == null)
+        {
+            throw new  NotFoundException();
+        }
+        return _mapper.Map<DepartmentDto>(department);
     }
 
     public async Task<IEnumerable<DepartmentDto>> GetAllAsync()

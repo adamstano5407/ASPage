@@ -45,6 +45,7 @@ public class EmployeeRepository : Repository<Employee, int>, IEmployeeRepository
     public async Task DeleteEmployeesFromCompany(int companyId)
     {
         await DbContext.Employees.Where(e => e.CompanyId == companyId).ExecuteDeleteAsync();
+        await SaveChangesAsync();
     }
 
     public async Task<IEnumerable<Employee>> GetEmployeesByCompanyId(int companyId)

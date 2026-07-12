@@ -38,7 +38,7 @@ public class EmployeeService : IEmployeeService
         _mapper = mapper;
     }
     
-    public async Task<EmployeeDto?> GetAsync(int id)
+    public async Task<EmployeeDto> GetAsync(int id)
     {
         var employee = await _employeeRepository.GetByIdAsync(id);
         return employee == null ? throw new NotFoundException() : _mapper.Map<EmployeeDto>(employee);

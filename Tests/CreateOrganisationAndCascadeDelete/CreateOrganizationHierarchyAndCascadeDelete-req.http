@@ -94,7 +94,7 @@ DELETE {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.i
 # @name GetDeletedCompanyRequest
 GET {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}
 
-### Get Deleted Employee
+### Get Deleted Company Employees
 # @name GetDeletedEmployeeRequest
 GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.id}}
 
