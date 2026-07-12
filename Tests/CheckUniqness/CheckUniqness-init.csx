@@ -14,6 +14,14 @@ var division = GenerateDivision();
 var project = GenerateProject();
 var department = GenerateDepartment();
 
+// make second for update methods 
+var company2 = GenerateCompany();
+var employee2 = GenerateEmployee();
+var division2 = GenerateDivision();
+var project2 = GenerateProject();
+var department2 = GenerateDepartment();
+
+
 var companyClone = company.Clone();
 var employeeClone = employee.Clone();
 var divisionClone = division.Clone();
@@ -43,6 +51,7 @@ tp.SetVariable("CompanyClone", companyClone.ToJsonString(), Tag);
 tp.SetVariable("CompanyCodeClone", companyCodeClone.ToJsonString(), Tag);
 
 
+
 SetObjectVariables("Employee", employee, Tag);
 SetObjectVariables("EmployeeClone", employeeClone, Tag);
 SetObjectVariables("EmployeeEmailClone", employeeEmailClone, Tag);
@@ -59,3 +68,14 @@ SetObjectVariables("ProjectCodeClone", projectCodeClone, Tag);
 SetObjectVariables("Department", department, Tag);
 SetObjectVariables("DepartmentClone", departmentClone, Tag);
 SetObjectVariables("DepartmentCodeClone", departmentCodeClone, Tag);
+
+
+
+SetObjectVariables("Company", company, Tag);
+SetObjectVariables("Company2", company2, Tag);
+SetObjectVariables("Employee2", employee2, Tag);
+SetObjectVariables("Division2", division2, Tag);
+SetObjectVariables("Project2", project2, Tag);
+SetObjectVariables("Department2", department2, Tag);
+
+

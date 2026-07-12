@@ -119,6 +119,8 @@ public class EmployeeService : IEmployeeService
     {
         request.EmployeeId = employeeId;
         await _changeCompanyVal.ValidateAndThrowAsync(request);
+        await UnassignEmployeeFromLeadershipPositions(request.EmployeeId);
+        await _employeeRepository.ChangeCompanyOfEmployeeAsync(request.NewCompanyId, request.EmployeeId);
     }
 
     public async Task UnassignEmployeeFromLeadershipPositions(int employeeId)

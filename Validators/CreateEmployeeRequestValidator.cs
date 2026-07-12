@@ -17,7 +17,7 @@ public class CreateEmployeeRequestValidator : AbstractValidator<CreateEmployeeRe
                 !await employeeRepository.EmployeeNumberExistsInCompanyAsync(
                     request.CompanyId,
                     employeeNumber,
-                    cancellation))
+                    cancellation: cancellation))
             .WithMessage("Employee number already exists in this company.");
 
         RuleFor(x => x.Title)
@@ -45,7 +45,7 @@ public class CreateEmployeeRequestValidator : AbstractValidator<CreateEmployeeRe
                 !await employeeRepository.EmailExistsInCompanyAsync(
                     request.CompanyId,
                     email,
-                    cancellation))
+                    cancellation: cancellation))
             .WithMessage("Employee with this Email already exists in this company.");
 
         RuleFor(x => x.Phone)

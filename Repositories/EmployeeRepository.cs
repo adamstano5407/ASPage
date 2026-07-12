@@ -7,14 +7,17 @@ namespace APIKros.Repositories;
 public interface IEmployeeRepository : IRepository<Employee, int>
 {
     Task UnassignEmployeeFromLeadershipPositionsAsync(int employeeId);
-    
+
     Task DeleteEmployeesFromCompany(int companyId);
-    
+
     Task<IEnumerable<Employee>> GetEmployeesByCompanyId(int companyId);
-    
-    Task<bool> EmailExistsInCompanyAsync(int companyId, string email, CancellationToken cancellation = default);
-    
-    Task<bool> EmployeeNumberExistsInCompanyAsync(int companyId, string employeeNumber, CancellationToken cancellation = default);
+
+    Task<bool> EmailExistsInCompanyAsync(int companyId, string email, int? id = null, CancellationToken cancellation = default);
+
+    Task ChangeCompanyOfEmployeeAsync(int companyId, int employeeId);
+
+    Task<bool> EmployeeNumberExistsInCompanyAsync(int companyId, string employeeNumber,  int? id = null,
+        CancellationToken cancellation = default);
 }
 
 public class EmployeeRepository : Repository<Employee, int>, IEmployeeRepository
@@ -57,22 +60,34 @@ public class EmployeeRepository : Repository<Employee, int>, IEmployeeRepository
     public async Task<bool> EmailExistsInCompanyAsync(
         int companyId,
         string email,
+        int? id = null,
         CancellationToken cancellationToken = default)
     {
         return await DbContext.Employees.AnyAsync(
             e => e.CompanyId == companyId &&
-                 e.Email == email,
+                 e.Email == email &&
+                 (!id.HasValue || e.Id != id.Value),
             cancellationToken);
     }
 
+
+    public async Task ChangeCompanyOfEmployeeAsync(int companyId, int employeeId)
+    {
+        await DbContext.Employees.Where(e => e.Id == employeeId)
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.CompanyId, companyId));
+    }
+
+   
     public async Task<bool> EmployeeNumberExistsInCompanyAsync(
         int companyId,
         string employeeNumber,
+        int? id = null,
         CancellationToken cancellationToken = default)
     {
         return await DbContext.Employees.AnyAsync(
             e => e.CompanyId == companyId &&
-                 e.EmployeeNumber == employeeNumber,
+                 e.EmployeeNumber == employeeNumber &&
+                 (!id.HasValue || e.Id != id.Value),
             cancellationToken);
     }
 }

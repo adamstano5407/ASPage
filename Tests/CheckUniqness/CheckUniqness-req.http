@@ -203,6 +203,157 @@ Content-Type: application/json
 }
 
 
+
+### Create Employee Two
+# @name CreateEmployee2Request
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{
+  "employeeNumber": "{{Employee2EmployeeNumber}}",
+  "title": "{{Employee2Title}}",
+  "firstName": "{{Employee2FirstName}}",
+  "lastName": "{{Employee2LastName}}",
+  "email": "{{Employee2Email}}",
+  "phone": "{{Employee2Phone}}",
+  "companyId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+
+### Create Division Two
+# @name CreateDivision2Request
+POST {{APP_URL}}{{DivisionsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{Division2Name}}",
+  "code": "{{Division2Code}}",
+  "parentId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+
+### Create Project Two
+# @name CreateProject2Request
+POST {{APP_URL}}{{ProjectsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{Project2Name}}",
+  "code": "{{Project2Code}}",
+  "parentId": {{CreateDivision2Request.response.body.$.id}}
+}
+
+
+### Create Department Two
+# @name CreateDepartment2Request
+POST {{APP_URL}}{{DepartmentsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{Department2Name}}",
+  "code": "{{Department2Code}}",
+  "parentId": {{CreateProject2Request.response.body.$.id}}
+}
+
+### Update Employee Email Clone Violation
+
+# @name UpdateEmployeeEmailCloneRequest
+
+PUT {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployee2Request.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "email": "{{EmployeeEmail}}",
+  "employeeNumber": "{{Employee2EmployeeNumber}}",
+  "firstName": "{{Employee2FirstName}}",
+  "lastName": "{{Employee2LastName}}",
+  "title": "{{Employee2Title}}",
+  "phone": "{{Employee2Phone}}",
+  "companyId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Update Employee Number Clone Violation
+
+# @name UpdateEmployeeNumberCloneRequest
+
+PUT {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployee2Request.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "email": "{{Employee2Email}}",
+  "employeeNumber": "{{EmployeeEmployeeNumber}}",
+  "firstName": "{{Employee2FirstName}}",
+  "lastName": "{{Employee2LastName}}",
+  "title": "{{Employee2Title}}",
+  "phone": "{{Employee2Phone}}",
+  "companyId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Update Division Code Clone Violation
+
+# @name UpdateDivisionCodeCloneRequest
+
+PUT {{APP_URL}}{{DivisionsEndpoint}}/{{CreateDivision2Request.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "name": "{{Division2Name}}",
+  "code": "{{DivisionCode}}",
+  "managerId": {{CreateEmployeeRequest.response.body.$.id}},
+  "parentId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Update Project Code Clone Violation
+
+# @name UpdateProjectCodeCloneRequest
+
+PUT {{APP_URL}}{{ProjectsEndpoint}}/{{CreateProject2Request.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "name": "{{Project2Name}}",
+  "code": "{{ProjectCode}}",
+  "managerId": {{CreateEmployeeRequest.response.body.$.id}},
+  "parentId": {{CreateDivisionRequest.response.body.$.id}}
+}
+
+### Update Department Code Clone Violation
+
+# @name UpdateDepartmentCodeCloneRequest
+
+PUT {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartment2Request.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "name": "{{Department2Name}}",
+  "code": "{{DepartmentCode}}",
+  "managerId": {{CreateEmployeeRequest.response.body.$.id}},
+  "parentId": {{CreateProjectRequest.response.body.$.id}}
+}
+
+
+
+### Delete Department Two
+# @name DeleteDepartment2Request
+DELETE {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartment2Request.response.body.$.id}}
+
+
+### Delete Project Two
+# @name DeleteProject2Request
+DELETE {{APP_URL}}{{ProjectsEndpoint}}/{{CreateProject2Request.response.body.$.id}}
+
+
+### Delete Division Two
+# @name DeleteDivision2Request
+DELETE {{APP_URL}}{{DivisionsEndpoint}}/{{CreateDivision2Request.response.body.$.id}}
+
+
+### Delete Employee Two
+# @name DeleteEmployee2Request
+DELETE {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployee2Request.response.body.$.id}}
+
+
+
 ### Delete Department
 # @name DeleteDepartmentRequest
 DELETE {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartmentRequest.response.body.$.id}}
@@ -225,3 +376,4 @@ DELETE {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.
 ### Delete Company
 # @name DeleteCompanyRequest
 DELETE {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}
+

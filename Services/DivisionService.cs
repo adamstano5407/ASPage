@@ -75,6 +75,7 @@ public class DivisionService : IDivisionService
 
     public async Task UpdateAsync(int id, UpdateDivisionRequest request)
     {
+        request.Id = id;
         await _updateValidator.ValidateAndThrowAsync(request);
 
         var division = await _divisionRepo.GetByIdAsync(id);
@@ -121,6 +122,7 @@ public class DivisionService : IDivisionService
 
     public async Task AssignManagerAsync(int id, AssignManagerRequest request)
     {
+        request.NodeId = id;
         await _assignManagerValidator.ValidateAndThrowAsync(request);
 
         var division = await _divisionRepo.GetByIdAsync(id);

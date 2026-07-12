@@ -1,0 +1,202 @@
+### Create Company
+# @name CreateCompanyRequest
+POST {{APP_URL}}{{CompaniesEndpoint}}
+Content-Type: application/json
+
+{{Company}}
+
+### Create Company Two
+# @name CreateCompanyTwoRequest
+POST {{APP_URL}}{{CompaniesEndpoint}}
+Content-Type: application/json
+
+{{CompanyTwo}}
+
+
+### Create Employee
+# @name CreateEmployeeRequest
+POST {{APP_URL}}{{EmployeesEndpoint}}
+Content-Type: application/json
+
+{
+  "employeeNumber": "{{EmployeeEmployeeNumber}}",
+  "title": "{{EmployeeTitle}}",
+  "firstName": "{{EmployeeFirstName}}",
+  "lastName": "{{EmployeeLastName}}",
+  "email": "{{EmployeeEmail}}",
+  "phone": "{{EmployeePhone}}",
+  "companyId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+
+### Create Division
+# @name CreateDivisionRequest
+POST {{APP_URL}}{{DivisionsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DivisionName}}",
+  "code": "{{DivisionCode}}",
+  "parentId": {{CreateCompanyRequest.response.body.$.id}}
+}
+
+### Create Project
+# @name CreateProjectRequest
+POST {{APP_URL}}{{ProjectsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{ProjectName}}",
+  "code": "{{ProjectCode}}",
+  "parentId": {{CreateDivisionRequest.response.body.$.id}}
+}
+
+### Create Department
+# @name CreateDepartmentRequest
+POST {{APP_URL}}{{DepartmentsEndpoint}}
+Content-Type: application/json
+
+{
+  "name": "{{DepartmentName}}",
+  "code": "{{DepartmentCode}}",
+  "parentId": {{CreateProjectRequest.response.body.$.id}}
+}
+
+### Assign Company Manager
+# @name AssignCompanyManagerRequest
+PUT {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}/manager
+Content-Type: application/json
+
+{
+  "employeeId": {{CreateEmployeeRequest.response.body.$.id}}
+}
+
+
+### Assign Division Manager
+# @name AssignDivisionManagerRequest
+PUT {{APP_URL}}{{DivisionsEndpoint}}/{{CreateDivisionRequest.response.body.$.id}}/manager
+Content-Type: application/json
+
+{
+  "employeeId": {{CreateEmployeeRequest.response.body.$.id}}
+}
+
+
+### Assign Project Manager
+# @name AssignProjectManagerRequest
+PUT {{APP_URL}}{{ProjectsEndpoint}}/{{CreateProjectRequest.response.body.$.id}}/manager
+Content-Type: application/json
+
+{
+  "employeeId": {{CreateEmployeeRequest.response.body.$.id}}
+}
+
+
+### Assign Department Manager
+# @name AssignDepartmentManagerRequest
+PUT {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartmentRequest.response.body.$.id}}/manager
+Content-Type: application/json
+
+{
+  "employeeId": {{CreateEmployeeRequest.response.body.$.id}}
+}
+
+
+### Unassign Employee Leadership Positions
+# @name UnassignEmployeeLeadershipPositionsRequest
+DELETE {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.id}}/leadership-positions
+
+
+### Get Company After Unassign
+# @name GetCompanyAfterUnassignRequest
+GET {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}
+
+
+### Get Division After Unassign
+# @name GetDivisionAfterUnassignRequest
+GET {{APP_URL}}{{DivisionsEndpoint}}/{{CreateDivisionRequest.response.body.$.id}}
+
+
+### Get Project After Unassign
+# @name GetProjectAfterUnassignRequest
+GET {{APP_URL}}{{ProjectsEndpoint}}/{{CreateProjectRequest.response.body.$.id}}
+
+
+### Get Department After Unassign
+# @name GetDepartmentAfterUnassignRequest
+GET {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartmentRequest.response.body.$.id}}
+
+
+### Assign Company Manager Again
+# @name AssignCompanyManagerAgainRequest
+PUT {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}/manager
+Content-Type: application/json
+
+{
+  "employeeId": {{CreateEmployeeRequest.response.body.$.id}}
+}
+
+
+### Assign Division Manager Again
+# @name AssignDivisionManagerAgainRequest
+PUT {{APP_URL}}{{DivisionsEndpoint}}/{{CreateDivisionRequest.response.body.$.id}}/manager
+Content-Type: application/json
+
+{
+  "employeeId": {{CreateEmployeeRequest.response.body.$.id}}
+}
+
+
+### Assign Project Manager Again
+# @name AssignProjectManagerAgainRequest
+PUT {{APP_URL}}{{ProjectsEndpoint}}/{{CreateProjectRequest.response.body.$.id}}/manager
+Content-Type: application/json
+
+{
+  "employeeId": {{CreateEmployeeRequest.response.body.$.id}}
+}
+
+
+### Assign Department Manager Again
+# @name AssignDepartmentManagerAgainRequest
+PUT {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartmentRequest.response.body.$.id}}/manager
+Content-Type: application/json
+
+{
+  "employeeId": {{CreateEmployeeRequest.response.body.$.id}}
+}
+
+
+### Change Employee Company
+# @name ChangeEmployeeCompanyRequest
+PUT {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.id}}/company
+Content-Type: application/json
+
+{
+  "newCompanyId": {{CreateCompanyTwoRequest.response.body.$.id}}
+}
+
+
+### Get Employee After Company Change
+# @name GetEmployeeAfterCompanyChangeRequest
+GET {{APP_URL}}{{EmployeesEndpoint}}/{{CreateEmployeeRequest.response.body.$.id}}
+
+
+### Get Company After Company Change
+# @name GetCompanyAfterCompanyChangeRequest
+GET {{APP_URL}}{{CompaniesEndpoint}}/{{CreateCompanyRequest.response.body.$.id}}
+
+
+### Get Division After Company Change
+# @name GetDivisionAfterCompanyChangeRequest
+GET {{APP_URL}}{{DivisionsEndpoint}}/{{CreateDivisionRequest.response.body.$.id}}
+
+
+### Get Project After Company Change
+# @name GetProjectAfterCompanyChangeRequest
+GET {{APP_URL}}{{ProjectsEndpoint}}/{{CreateProjectRequest.response.body.$.id}}
+
+
+### Get Department After Company Change
+# @name GetDepartmentAfterCompanyChangeRequest
+GET {{APP_URL}}{{DepartmentsEndpoint}}/{{CreateDepartmentRequest.response.body.$.id}}

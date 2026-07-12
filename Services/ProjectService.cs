@@ -68,6 +68,7 @@ public class ProjectService : IProjectService
 
     public async Task UpdateAsync(int id, UpdateProjectRequest request)
     {
+        request.Id = id;
         await _updateValidator.ValidateAndThrowAsync(request);
 
         var project = await GetRequiredProjectAsync(id);
@@ -105,6 +106,7 @@ public class ProjectService : IProjectService
 
     public async Task AssignManagerAsync(int id, AssignManagerRequest request)
     {
+        request.NodeId = id;
         await _assignManagerValidator.ValidateAndThrowAsync(request);
 
         var project = await GetRequiredProjectAsync(id);

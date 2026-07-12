@@ -1,12 +1,13 @@
 
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace APIKros.Requests.Employee
 {
     public class ChangeCompanyRequest
     {
-        [Required]
+        [JsonIgnore]
         public int EmployeeId { get; set; }
         
         [Required]

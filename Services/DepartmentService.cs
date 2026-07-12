@@ -83,6 +83,7 @@ public class DepartmentService : IDepartmentService
 
     public async Task UpdateAsync(int id, UpdateDepartmentRequest request)
     {
+        request.Id = id;
         await _updateValidator.ValidateAndThrowAsync(request);
 
         var department = await GetRequiredDepartmentAsync(id);
@@ -120,6 +121,7 @@ public class DepartmentService : IDepartmentService
 
     public async Task AssignManagerAsync(int id, AssignManagerRequest request)
     {
+        request.NodeId = id;
         await _assignManagerValidator.ValidateAndThrowAsync(request);
 
         var department = await GetRequiredDepartmentAsync(id);
