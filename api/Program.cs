@@ -2,24 +2,21 @@ using APIKros.Data;
 using APIKros.Extensions;
 using APIKros.Handlers;
 using APIKros.Seeders;
+using ASPage.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.OpenApi;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 //Rate limiter 
-builder.Services.AddRateLimiter(options =>
-{
-    options.AddFixedWindowLimiter("default", limiter =>
-    {
-        limiter.Window = TimeSpan.FromHours(1);
-        limiter.PermitLimit = 100;
-    });
-});
+builder.Services.AddRateLimiterCustom();
 
+builder.Services.AddOpenApiWithServerUrl(builder.Environment);
 // Add services to the container.
 builder.Services.AddRepositories();
 builder.Services.AddServices();
@@ -37,8 +34,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

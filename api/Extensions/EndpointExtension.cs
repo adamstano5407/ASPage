@@ -21,7 +21,7 @@ public static class EndpointExtensions
         api.MapEmployeeEndpoints();
         if (app.ServiceProvider.GetRequiredService<IHostEnvironment>().IsDevelopment())
         {
-            app.MapPost("/dev/seed", async (AppDbContext context) =>
+            app.MapPost("api/dev/seed", async (AppDbContext context) =>
             {
                 await DatabaseSeeder.SeedAsync(context);
                 return Results.Ok("Database seeded.");

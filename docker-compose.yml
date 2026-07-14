@@ -59,7 +59,20 @@ services:
       - api
     networks:
       - app_network
-
+  
+  nginx:
+    build: 
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+        - "127.0.0.1:80:80"
+    depends_on:
+        - frontend
+        - api
+    networks:
+      - app_network
+  
   adminer:
     image: adminer
     container_name: adminer

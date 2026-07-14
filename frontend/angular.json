@@ -59,6 +59,9 @@
           "defaultConfiguration": "production"
         },
         "serve": {
+          "options": {
+            "allowedHosts": ["frontend"]
+          },
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {

@@ -7,7 +7,8 @@ down:
 	docker compose down -v
 
 fix-host-permissions:
-	sudo chown -R $(USER):$(USER) ./bin ./obj && dotnet restore
+	sudo chown -R $(USER):$(USER) ./api/bin ./api/obj
+	cd ./api && dotnet restore
 
 migrate:
 	docker exec -it -u $$(id -u):$$(id -g) api dotnet ef database update
