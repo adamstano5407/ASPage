@@ -29,5 +29,4 @@ exec gosu ${USER_ID}:${GROUP_ID} env HOME=/home/ubuntu \
     PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/ubuntu/.dotnet/tools" \
     bash -lc '
 dotnet restore
-dotnet watch run --urls http://0.0.0.0:8080
-'
+dotnet watch run --urls http://0.0.0.0:8080'
