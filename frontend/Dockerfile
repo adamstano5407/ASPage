@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 4200
 
-CMD ["npm", "run", "start:docker"]
+CMD ["npm", "run", "dev"]
