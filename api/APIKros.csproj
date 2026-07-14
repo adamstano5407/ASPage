@@ -38,21 +38,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include=".teapie\Definitions\Company\Company.csx" />
-    <Content Include=".teapie\Definitions\Company\CompanyFaker.csx" />
-    <Content Include=".teapie\Definitions\Department\Department.csx" />
-    <Content Include=".teapie\Definitions\Department\DepartmentFaker.csx" />
-    <Content Include=".teapie\Definitions\Division\Division.csx" />
-    <Content Include=".teapie\Definitions\Division\DivisionFaker.csx" />
-    <Content Include=".teapie\Definitions\Employee\Employee.csx" />
-    <Content Include=".teapie\Definitions\Employee\EmployeeFaker.csx" />
-    <Content Include=".teapie\Definitions\Generator.csx" />
-    <Content Include=".teapie\Definitions\IClone.csx" />
-    <Content Include=".teapie\Definitions\Project\Project.csx" />
-    <Content Include=".teapie\Definitions\Project\ProjectFaker.csx" />
-    <Content Include=".teapie\Definitions\ResponseClasses.csx" />
-    <Content Include=".teapie\Definitions\SetObjectVariable.csx" />
-    <Content Include=".teapie\env.json" />
+    <Folder Include="frontend\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="backend\.teapie\Definitions\Company\Company.csx" />
+    <Content Include="backend\.teapie\Definitions\Company\CompanyFaker.csx" />
+    <Content Include="backend\.teapie\Definitions\Department\Department.csx" />
+    <Content Include="backend\.teapie\Definitions\Department\DepartmentFaker.csx" />
+    <Content Include="backend\.teapie\Definitions\Division\Division.csx" />
+    <Content Include="backend\.teapie\Definitions\Division\DivisionFaker.csx" />
+    <Content Include="backend\.teapie\Definitions\Employee\Employee.csx" />
+    <Content Include="backend\.teapie\Definitions\Employee\EmployeeFaker.csx" />
+    <Content Include="backend\.teapie\Definitions\Generator.csx" />
+    <Content Include="backend\.teapie\Definitions\IClone.csx" />
+    <Content Include="backend\.teapie\Definitions\Project\Project.csx" />
+    <Content Include="backend\.teapie\Definitions\Project\ProjectFaker.csx" />
+    <Content Include="backend\.teapie\Definitions\ResponseClasses.csx" />
+    <Content Include="backend\.teapie\Definitions\SetObjectVariable.csx" />
+    <Content Include="backend\.teapie\env.json" />
   </ItemGroup>
 
 </Project>

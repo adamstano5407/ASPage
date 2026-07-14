@@ -1,7 +1,7 @@
 services:
   api:
     build:
-      context: .
+      context: ./api
       dockerfile: Dockerfile
       args:
         - UID=${LOCAL_UID}
@@ -9,7 +9,7 @@ services:
     container_name: api
     working_dir: /src
     volumes:
-      - .:/src
+      - ./api:/src
       - api_bin:/src/bin
       - api_obj:/src/obj
       - nuget_cache:/home/ubuntu/.nuget/packages
@@ -41,6 +41,21 @@ services:
       - MSSQL_SA_PASSWORD=${DB_PASSWORD}
       - MSSQL_PID=Developer
     restart: unless-stopped
+    networks:
+      - app_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "127.0.0.1:4200:4200"
+    depends_on:
+      - api
     networks:
       - app_network
 
