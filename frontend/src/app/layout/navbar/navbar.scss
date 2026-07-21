@@ -1,0 +1,36 @@
+:host {
+    display: block;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 64px;
+    padding: 0 2rem;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.navbar-brand {
+    flex-shrink: 0;
+}
+
+.navbar-content {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.navigation {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}

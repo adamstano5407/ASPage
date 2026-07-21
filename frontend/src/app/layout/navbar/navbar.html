@@ -1,14 +1,46 @@
-<nav class="navigation">
-     @for (item of items; track item.route) {
+<header class="navbar">
 
-        <a
-            [routerLink]="item.route"
-            routerLinkActive="active">
+    <div class="navbar-brand">
+    
+    </div>
 
-            {{ item.label }}
+     <div class="navbar-content">   
+    <nav class="navigation">
 
-        </a>
+        @for (item of items; track item.route ?? item.label) {
 
-    }
+            <a
+                class="navigation-item"
+                [routerLink]="item.route"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.route === '/' }">
 
-</nav>
+                @if (item.icon) {
+                    <span class="navigation-item-icon">
+                        <ng-container *ngComponentOutlet="item.icon" />
+                    </span>
+                }
+
+                <span class="navigation-item-label">
+                    {{ item.label }}
+                </span>
+
+            </a>
+
+        }
+
+    </nav>
+</div>
+
+ <div class="navbar-actions">
+
+            <!-- Search -->
+
+            <!-- Notifications -->
+
+            <!-- Theme Switch -->
+
+            <!-- User -->
+
+        </div>
+</header>
