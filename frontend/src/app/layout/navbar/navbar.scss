@@ -1,5 +1,8 @@
+@use '../../../styles' as *;
+
 :host {
     display: block;
+
 }
 
 .navbar {
@@ -7,10 +10,10 @@
     align-items: center;
     justify-content: space-between;
 
-    height: 64px;
+    height: 100px;
     padding: 0 2rem;
 
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #000000;
 }
 
 .navbar-brand {
@@ -21,8 +24,16 @@
     display: flex;
     align-items: center;
     gap: 2rem;
-}
 
+}
+.navigation-item {
+  font-family: $font-nav;
+  padding: 0 1rem;
+  text-decoration: none;
+  font-weight: bold;
+  color:$font-nav-color;
+
+}
 .navigation {
     display: flex;
     align-items: center;

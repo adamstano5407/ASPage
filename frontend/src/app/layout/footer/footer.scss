@@ -1,5 +1,9 @@
-:host { 
-    text-align: center;
+@use '../../../styles' as *;
 
+
+
+:host {
+    text-align: center;
+    font-family: $font-nav
 
 }

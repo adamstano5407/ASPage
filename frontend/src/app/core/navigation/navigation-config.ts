@@ -5,7 +5,11 @@ export const navigationConfig: NavigationItem[] = [
     {
         label: 'Home',
         route: '/',
-        icon: LucideHouse,
+    },
+    {
+      label: 'Zadania',
+      route: '/zadania',
     }
+
 
 ]
