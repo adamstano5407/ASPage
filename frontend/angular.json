@@ -60,7 +60,12 @@
         },
         "serve": {
           "options": {
-            "allowedHosts": ["frontend"]
+            "allowedHosts": [
+              "frontend",
+              "localhost",
+              "127.0.0.1"
+            ],
+            "hmr": true 
           },
           "builder": "@angular/build:dev-server",
           "configurations": {

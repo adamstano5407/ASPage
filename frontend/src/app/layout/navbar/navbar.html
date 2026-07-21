@@ -1,0 +1,14 @@
+<nav class="navigation">
+     @for (item of items; track item.route) {
+
+        <a
+            [routerLink]="item.route"
+            routerLinkActive="active">
+
+            {{ item.label }}
+
+        </a>
+
+    }
+
+</nav>
