@@ -1,10 +1,12 @@
 <header class="navbar">
 
-    <div class="navbar-brand">
-    
+    <div>
+      <a class="navbar-brand" routerLink="/">Welcome
+        <span class="brand-dot"></span>
+      </a>
     </div>
 
-     <div class="navbar-content">   
+     <div class="navbar-content">
     <nav class="navigation">
 
         @for (item of items; track item.route ?? item.label) {
@@ -33,14 +35,9 @@
 </div>
 
  <div class="navbar-actions">
+   <a routerLink="/" class="signup-button">
+     Sign Up
+   </a>
+ </div>
 
-            <!-- Search -->
-
-            <!-- Notifications -->
-
-            <!-- Theme Switch -->
-
-            <!-- User -->
-
-        </div>
 </header>

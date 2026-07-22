@@ -1,13 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Bevan:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bevan:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
 
 
 
 /* You can add global styles to this file, and also import other style files */
 // Fonts
 $font-nav: 'Inter', sans-serif;
-$font-nav-color : rgb(23 23 23);
+$font-nav-color : rgb(149 149 149);
 $font-heading: 'Poppins', sans-serif;
 $font-mono: 'JetBrains Mono', monospace;
 
@@ -20,3 +21,19 @@ $font-size-lg: 1.25rem;
 $font-weight-regular: 400;
 $font-weight-medium: 500;
 $font-weight-bold: 700;
+
+$greenPrimary: #00c96b;
+$greenSecondary: #00e676;
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+app-root {
+  display: block;
+  min-height: 100vh;
+}
