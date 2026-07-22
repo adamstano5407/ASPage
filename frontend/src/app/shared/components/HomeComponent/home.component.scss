@@ -1,0 +1,53 @@
+@use '../../../../styles' as *;
+
+
+:host {
+  text-align: center;
+}
+
+.hero {
+  padding: 4rem 2rem;
+  position: relative;
+  min-height: calc(100vh - 70px);
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: $font-pres;
+  &__title {
+    display: flex;
+    flex-direction: column;
+
+    margin: 0;
+    font-size: 3rem;
+    line-height: 1.05;
+  }
+
+  &__line {
+    display: block;
+
+    &--muted {
+      color: #303033;
+
+      text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.85),
+        0 0 20px rgba(255, 255, 255, 0.04);
+    }
+
+    &--highlight {
+      color: white;
+
+      text-shadow:
+        0 0 12px rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  &__icon {
+    width: 0.8em;
+    height: 0.8em;
+    vertical-align: middle;
+  }
+
+  &__dot {
+    color: $greenPrimary;
+    text-shadow: 0 0 14px rgba($greenPrimary, 0.7);
+  }
+}

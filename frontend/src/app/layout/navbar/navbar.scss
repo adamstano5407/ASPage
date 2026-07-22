@@ -35,8 +35,9 @@
 
 .brand-dot {
   display: block;
-  width: 20px;
-  height: 20px;
+  margin-top: 5px;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
 
   background-color: $greenPrimary;
@@ -69,15 +70,47 @@
 }
 
 .navigation-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
   padding: 0.4rem 0.7rem;
 
   font-family: 'Lato', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 
   color: $font-nav-color;
   text-decoration: none;
+  transition :
+    transform 0.25s ease,
+    color 0.25s ease;
 }
+.navigation-item::before {
+  content: '>';
+  position: absolute;
+  left: 0.0rem;
+
+  color: $greenPrimary;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+
+  opacity: 0;
+  transform: translateX(-10px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.navigation-item:hover {
+  color: $greenPrimary;
+  transform: translateX(5px);
+}
+
+.navigation-item:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 
 /* Right */
 .navbar-actions {
